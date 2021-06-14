@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # Project apps
-    'admin',
+    'administration',
     'authorization',
     'profiles',
     'reports',
