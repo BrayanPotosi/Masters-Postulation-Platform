@@ -8,7 +8,7 @@ Backend of master's postulation platform
 * `git clone https://github.com/master-s-postulation-platform/backend.git `
 
 2. `cd backend`
-3. `virtualenv -p=python3.9 .venv`
+3. `virtualenv -p=python3.8 .venv`
 4. `source .venv/bin/activate` 
 5. `pip install -r requirements.txt`
 6. `cd cd master_postulation_prj`
