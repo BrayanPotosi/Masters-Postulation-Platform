@@ -40,6 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Project apps
+    'admin',
+    'authorization',
+    'profiles',
+    'reports',
     # third party
     'rest_framework',
 ]
