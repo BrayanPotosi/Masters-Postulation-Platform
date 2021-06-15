@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Project apps
     'administration',
-    'authorization',
     'profiles',
     'reports',
     # third party
