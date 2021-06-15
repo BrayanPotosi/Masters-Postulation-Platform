@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'reports',
     # third party
     'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -126,10 +128,14 @@ USE_L10N = True
 
 USE_TZ = True
 
-# AUTH
-LOGIN_URL = '/login/'
-LOGOUT_URL ='/logout/'
-LOGIN_REDIRECT_URL = 'home'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/

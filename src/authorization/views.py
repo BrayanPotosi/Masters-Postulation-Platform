@@ -13,8 +13,7 @@ def candidate_login_view(request):
         user = authenticate(username=username, password=password)
         if user is not None:
             login(request, user)
-            print(user)
-        return Response({"auth":"login succesful"}, status=status.HTTP_200_OK)
+        return Response({"user":user}, status=status.HTTP_200_OK)
     else:
         return Response({"error":"Method no allowed"}, status=status.HTTP_200_OK)
 
