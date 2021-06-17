@@ -1,3 +1,7 @@
 from django.contrib import admin
+from .models import AdminLog, CandidateLog
 
-# Register your models here.
+admin.site.register(AdminLog)
+admin.site.register(CandidateLog)
+
+
