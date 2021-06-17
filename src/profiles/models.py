@@ -12,7 +12,7 @@ class JobStatus(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'{self.pk}'
+        return f'{self.company_name}, {self.salary}'
 
 
 class ProfessionalExperience(models.Model):
@@ -87,3 +87,6 @@ class CandidateLog(models.Model):
 
 class CambridgeLevel(models.Model):
     level = models.CharField(max_length=3)
+
+    def __str__(self):
+        return f'{self.level}'
