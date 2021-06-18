@@ -10,6 +10,7 @@ class CivilStatus(models.Model):
     def __str__(self) -> str:
         return f'C_status:{self.c_status}'
 
+
 class JobStatus(models.Model):
     has_job = models.BooleanField(default=False, null=False)
     company_name = models.CharField(max_length=50, null=True, blank=True)
@@ -35,6 +36,7 @@ class Cities(models.Model):
     def __str__(self):
         return f'{self.city_name}'
 
+
 class Address(models.Model):
     address_line1 = models.CharField(max_length=150)
     address_line2 = models.CharField(max_length=150)
@@ -44,6 +46,7 @@ class Address(models.Model):
 
     def __str__(self):
         return f'{self.postal_code}, {self.city}, {self.country}'
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -64,17 +67,20 @@ class Profile(models.Model):
     def __str__(self) -> str:
         return f'{self.score}'
 
+
 class LastGrade(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self) -> str:
         return f'{self.name}'
 
+
 class GottenGrade(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self) -> str:
         return f'{self.name}'
+
 
 class Education(models.Model):
     profile = models.ForeignKey(Profile, null=True ,on_delete=models.SET_NULL)
@@ -89,7 +95,6 @@ class Education(models.Model):
         return f'{self.institution_name}'
 
 
-
 class ProfessionalExperience(models.Model):
     profile = models.ForeignKey(Profile, null=True, on_delete=models.SET_NULL)
     company_name = models.CharField(max_length=50, null=True, blank=True)
@@ -102,11 +107,13 @@ class ProfessionalExperience(models.Model):
     def __str__(self):
         return f'{self.profile}, {self.company_name}'
 
+
 class CambridgeLevel(models.Model):
     level = models.CharField(max_length=3)
 
     def __str__(self):
         return f'{self.level}'
+
 
 class Languages(models.Model):
     profile = models.ForeignKey(Profile, null=True ,on_delete=models.SET_NULL)
