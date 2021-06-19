@@ -28,7 +28,7 @@ def profile_form(request, page):
     
     countries_serializer = CountriesSerializer(Countries.objects.all(), many=True)
    
-    if page == '1':
+    if page == 1:
         
         civil_status_serializer = CivilStatusSerializer(CivilStatus.objects.all(), many=True)
         options = {
@@ -42,7 +42,7 @@ def profile_form(request, page):
                             "profile": serializer.data,
                             "options": options,
                         })
-    if page == '2':
+    if page == 2:
         
         profile = Profile.objects.filter(user=request.user.id)
         serializer = SecondPageProfileSerializer(profile, many=True)
