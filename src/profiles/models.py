@@ -62,7 +62,7 @@ class Profile(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
-        return f'{self.score}'
+        return f'{self.score} user:{self.user}'
 
 class LastGrade(models.Model):
     name = models.CharField(max_length=100)
