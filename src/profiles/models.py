@@ -62,7 +62,7 @@ class Profile(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
-        return f'{self.score}'
+        return f'{self.score} user:{self.user}'
 
 class LastGrade(models.Model):
     name = models.CharField(max_length=100)
@@ -71,7 +71,7 @@ class LastGrade(models.Model):
         return f'{self.name}'
 
 class GottenGrade(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self) -> str:
         return f'{self.name}'
@@ -103,7 +103,7 @@ class ProfessionalExperience(models.Model):
         return f'{self.profile}, {self.company_name}'
 
 class CambridgeLevel(models.Model):
-    level = models.CharField(max_length=3)
+    level = models.CharField(max_length=6)
 
     def __str__(self):
         return f'{self.level}'
