@@ -1,17 +1,45 @@
 from django.db import models
-from rest_framework import fields, serializers
+from django.db.models import fields
+from rest_framework import serializers
 # Models
 from .models import (CivilStatus, Countries, 
                         Education, Profile, 
                         User, Address, 
                         JobStatus, Cities, 
-                        ProfessionalExperience, Languages)
+                        ProfessionalExperience, Languages,
+                        LastGrade, GottenGrade,
+                        CambridgeLevel,
+                    )
+
+class CambridgeLevelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CambridgeLevel
+        fields = ('level',)
+
+class CountriesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Countries
+        fields = ('country_name',)
+
+class CitiesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cities
+        fields = ('city_name',)
+
+class LastGradeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LastGrade
+        fields = ('name',)
+
+class GottenGradeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=GottenGrade
+        fields = ('name',)
 
 class CivilStatusSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = CivilStatus
-        fields= '__all__'
+        fields = ('c_status',)
 
 class UserSerializer(serializers.ModelSerializer):
 
