@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
-# Models
+from rest_framework.response import Response
+
 from administration.models import Score
+# Models
 
 
 class CivilStatus(models.Model):
@@ -50,8 +52,8 @@ class Address(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    birthday = models.DateField()
-    score = models.ForeignKey(Score, null=True ,on_delete=models.SET_NULL)
+    birthday = models.DateField(null=True)
+    score = models.ForeignKey(Score, null=True, on_delete=models.SET_NULL)
     total_score = models.PositiveIntegerField()
     civil_status = models.ForeignKey(CivilStatus, null=True, on_delete=models.SET_NULL)
     Address = models.ForeignKey(Address, null=True ,on_delete=models.SET_NULL)
