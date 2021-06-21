@@ -1,6 +1,8 @@
 from django.db import models
 from django.db.models import fields
 from rest_framework import serializers
+# Django
+from django.core.exceptions import ObjectDoesNotExist
 # Models
 from .models import (CivilStatus, Countries, 
                         Education, Profile, 
@@ -62,8 +64,21 @@ class EducationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model=Education
-        exclude = ['profile', 'created', 'updated']
+        exclude = ['profile','created', 'updated']
         depth = 1
+    
+    def create(self,request):
+        data = request.data
+        try:
+            profile = Profile.objects.get(user=request.user.id)
+            gotten_grade = GottenGrade.objects.get(pk=data.get('gotten_grade_id')) or None
+            last_grade = LastGrade.objects.get(pk=data.get('last_grade_id')) or None
+            return Education.objects.create(profile=profile, last_grade=last_grade, gotten_grade=gotten_grade, **data)
+        except ObjectDoesNotExist:
+            return None
+        
+        
+
 
 class LanguagesSerializer(serializers.ModelSerializer):
     class Meta:
