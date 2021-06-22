@@ -55,10 +55,20 @@ class UserSerializer(serializers.ModelSerializer):
             'id',
         )
 
+
 class ExperienceSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProfessionalExperience
         exclude = ['profile', 'created', 'updated']
+
+    def create(self, request):
+        data = request.data
+        try:
+            profile = Profile.objects.get(user=request.user.id)
+            return ProfessionalExperience.objects.create(profile=profile, **data)
+        except ObjectDoesNotExist:
+            return None
+
 
 class EducationSerializer(serializers.ModelSerializer):
 
@@ -76,8 +86,6 @@ class EducationSerializer(serializers.ModelSerializer):
             return Education.objects.create(profile=profile, last_grade=last_grade, gotten_grade=gotten_grade, **data)
         except ObjectDoesNotExist:
             return None
-        
-        
 
 
 class LanguagesSerializer(serializers.ModelSerializer):
@@ -85,6 +93,15 @@ class LanguagesSerializer(serializers.ModelSerializer):
         model = Languages
         exclude = ['profile', 'created', 'updated']
         depth = 1
+
+    def create(self, request):
+        data = request.data
+        try:
+            profile = Profile.objects.get(user=request.user.id)
+            level = CambridgeLevel.objects.get(pk=data.get('level_id')) or None
+            return Education.objects.create(profile=profile, level=level, **data)
+        except ObjectDoesNotExist:
+            return None
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -128,6 +145,21 @@ class FisrtPageProfileSerializer(serializers.ModelSerializer):
             'civil_status',
             'Address',
         )
+
+    def create(self, request):
+        print(f"-------------------------------------------\n")
+        print(request)
+        print(type(request))
+        print(f"-------------------------------------------\n")
+        data = request.data
+        print(data)
+        try:
+            civil_status = CivilStatus.objects.get(pk=data.get('civil_status_id')) or None
+            address = Address.objects.get(pk=data.get('Address_id')) or None
+            return Profile.objects.create(user=request.user.id, civil_status=civil_status, address=address, **data)
+        except ObjectDoesNotExist:
+            return None
+
 
 class SecondPageProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()

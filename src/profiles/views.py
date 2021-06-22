@@ -64,7 +64,6 @@ class LanguageProfile(APIView):
 
     def post(self, request):
         language_serializer = LanguagesSerializer(data=request.data)
-
         if language_serializer.is_valid():
             response = language_serializer.create(request)
             if response:
@@ -79,7 +78,6 @@ class LanguageProfile(APIView):
             language_serializer.save()
             return Response(language_serializer.data, status=status.HTTP_200_OK)
         return Response(language_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class ExperienceProfile(APIView):
@@ -98,7 +96,6 @@ class ExperienceProfile(APIView):
 
     def post(self, request):
         experience_serializer = ExperienceSerializer(data=request.data)
-
         if experience_serializer.is_valid():
             response = experience_serializer.create(request)
             if response:
@@ -114,52 +111,71 @@ class ExperienceProfile(APIView):
             return Response(experience_serializer.data, status=status.HTTP_200_OK)
         return Response(experience_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request):
+        education = Education.objects.filter(user=request.user.id)
+        education.delete()
 
-@api_view(['GET'])
+
+@api_view(['GET', 'POST', 'PUT'])
 @authentication_classes([authentication.TokenAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def profile_form(request, page):
-    
-    countries_serializer = CountriesSerializer(Countries.objects.all(), many=True)
-   
-    if page == 1:
-        
-        civil_status_serializer = CivilStatusSerializer(CivilStatus.objects.all(), many=True)
-        options = {
-            "countries": countries_serializer.data,
-            "civil_status": civil_status_serializer.data,
-        }
-        profile = Profile.objects.filter(user=request.user.id)
-        serializer = FisrtPageProfileSerializer(profile, many=True)
 
-        return Response({
-                            "profile": serializer.data,
-                            "options": options,
-                        })
-    if page == 2:
-        
-        profile = Profile.objects.filter(user=request.user.id)
-        profile_serializer = SecondPageProfileSerializer(profile, many=True)
+    if request.method == 'GET':
 
-        gotten_grade_serializer = GottenGradeSerializer(GottenGrade.objects.all(), many=True)
+        countries_serializer = CountriesSerializer(Countries.objects.all(), many=True)
 
-        last_grade_serializer = LastGradeSerializer(LastGrade.objects.all(), many=True)
+        if page == 1:
 
-        cities_serializer = CitiesSerializer(Cities.objects.all(), many=True)
+            civil_status_serializer = CivilStatusSerializer(CivilStatus.objects.all(), many=True)
+            options = {
+                "countries": countries_serializer.data,
+                "civil_status": civil_status_serializer.data,
+            }
+            profile = Profile.objects.filter(user=request.user.id)
+            serializer = FisrtPageProfileSerializer(profile, many=True)
 
-        canbridge_level_serializer = CambridgeLevelSerializer(CambridgeLevel.objects.all(), many=True)
+            return Response({
+                                "profile": serializer.data,
+                                "options": options,
+                            })
+        if page == 2:
 
-        options = {
-            "cities": cities_serializer.data,
-            "countries": countries_serializer.data,
-            "last_grade": last_grade_serializer.data,
-            "gotten_grade": gotten_grade_serializer.data,
-            "cambridge_level": canbridge_level_serializer.data,
-        }
+            profile = Profile.objects.filter(user=request.user.id)
+            profile_serializer = SecondPageProfileSerializer(profile, many=True)
 
-        return Response({
-                            "profile": profile_serializer.data, 
-                            "options": options,
-                        })
-    else:
-        return Response({"response": "page not found"}, status=404)
+            gotten_grade_serializer = GottenGradeSerializer(GottenGrade.objects.all(), many=True)
+
+            last_grade_serializer = LastGradeSerializer(LastGrade.objects.all(), many=True)
+
+            cities_serializer = CitiesSerializer(Cities.objects.all(), many=True)
+
+            canbridge_level_serializer = CambridgeLevelSerializer(CambridgeLevel.objects.all(), many=True)
+
+            options = {
+                "cities": cities_serializer.data,
+                "countries": countries_serializer.data,
+                "last_grade": last_grade_serializer.data,
+                "gotten_grade": gotten_grade_serializer.data,
+                "cambridge_level": canbridge_level_serializer.data,
+            }
+
+            return Response({
+                                "profile": profile_serializer.data,
+                                "options": options,
+                            })
+        else:
+            return Response({"response": "page not found"}, status=404)
+
+    elif request.method == 'POST':
+
+        if page == 1:
+            request.data['user']
+            profile_serializer = FisrtPageProfileSerializer(data=request.data)
+            if profile_serializer.is_valid():
+                response = profile_serializer.create(request)
+                if response:
+                    profile_response = FisrtPageProfileSerializer(response)
+                    return Response(profile_response.data, status=status.HTTP_201_CREATED)
+                return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
