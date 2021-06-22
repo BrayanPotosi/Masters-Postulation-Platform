@@ -4,6 +4,8 @@ from rest_framework import serializers, status, authentication, permissions
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
+# Django
+from django.http import Http404
 # Serializers
 from .serializers import ( 
                             CambridgeLevelSerializer, ExperienceSerializer, 
@@ -29,13 +31,24 @@ class education_profile(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def get_object(self, request, pk):
+        try:
+            profile = Profile.objects.get(user=request.user.id)
+            education_obj = Education.objects.get(pk=pk)
+            if education_obj.profile == profile:
+                return education_obj
+            raise Http404
+        except:
+            raise Http404
+
     def get(self, request):
         try:
             profile = Profile.objects.filter(user=request.user.id)
             education_serializer = EducationSerializer(Education.objects.filter(profile=profile[0].id), many=True)
         except:
-            return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
-            
+            # return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+            raise Http404
+
         return Response(education_serializer.data)
     
     def post(self, request):
@@ -45,9 +58,25 @@ class education_profile(APIView):
             if response :
                 education_response = EducationSerializer(response)
                 return Response(education_response.data, status=status.HTTP_201_CREATED)
-            return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+            # return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+            raise Http404
         return Response(education_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+    
+    def put(self, request):
+            education_item = self.get_object(request, request.data.get('education_id'))
+            education_serializer = EducationSerializer(education_item, data=request.data)
+            if education_serializer.is_valid():
+                education_response = education_serializer.update(education_item, request.data)
+                if education_response:
+                    response = EducationSerializer(education_response)
+                    return Response(response.data)
+                raise Http404
+            return Response(education_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request):
+        education_item = self.get_object(request, request.data.get('education_id'))
+        education_item.delete()
+        return Response({"delete":"done"}, status=status.HTTP_204_NO_CONTENT)
 
 @api_view(['GET'])
 @authentication_classes([authentication.TokenAuthentication])

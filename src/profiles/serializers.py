@@ -16,32 +16,32 @@ from .models import (CivilStatus, Countries,
 class CambridgeLevelSerializer(serializers.ModelSerializer):
     class Meta:
         model = CambridgeLevel
-        fields = ('level',)
+        fields = ('level','id',)
 
 class CountriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Countries
-        fields = ('country_name',)
+        fields = ('country_name','id',)
 
 class CitiesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cities
-        fields = ('city_name',)
+        fields = ('city_name','id',)
 
 class LastGradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = LastGrade
-        fields = ('name',)
+        fields = ('name','id',)
 
 class GottenGradeSerializer(serializers.ModelSerializer):
     class Meta:
         model=GottenGrade
-        fields = ('name',)
+        fields = ('name','id',)
 
 class CivilStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = CivilStatus
-        fields = ('c_status',)
+        fields = ('c_status','id',)
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -52,7 +52,6 @@ class UserSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'username',
-            'id',
         )
 
 class ExperienceSerializer(serializers.ModelSerializer):
@@ -76,8 +75,17 @@ class EducationSerializer(serializers.ModelSerializer):
             return Education.objects.create(profile=profile, last_grade=last_grade, gotten_grade=gotten_grade, **data)
         except ObjectDoesNotExist:
             return None
-        
-        
+    
+    def update(self, instance, data):
+        try:
+            instance.gotten_grade = GottenGrade.objects.get(pk=data.get('gotten_grade_id')) or None
+            instance.last_grade = LastGrade.objects.get(pk=data.get('last_grade_id')) or None
+            instance.institution_name = data.get('institution_name')
+            instance.year_end = data.get('year_end')
+            instance.save()
+            return instance
+        except ObjectDoesNotExist:
+            return None
 
 
 class LanguagesSerializer(serializers.ModelSerializer):
