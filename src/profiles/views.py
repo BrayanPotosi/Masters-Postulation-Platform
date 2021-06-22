@@ -60,6 +60,8 @@ class LanguageProfile(APIView):
         except:
             return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
 
+        return Response(language_serializer.data)
+
     def post(self, request):
         language_serializer = LanguagesSerializer(data=request.data)
 
@@ -70,6 +72,14 @@ class LanguageProfile(APIView):
                 return Response(language_response.data, status=status.HTTP_201_CREATED)
             return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(language_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        language_serializer = LanguagesSerializer(Languages, data=request.data)
+        if language_serializer.is_valid():
+            language_serializer.save()
+            return Response(language_serializer.data, status=status.HTTP_200_OK)
+        return Response(language_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class ExperienceProfile(APIView):
@@ -84,6 +94,8 @@ class ExperienceProfile(APIView):
         except:
             return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
 
+        return Response(experience_serializer.data)
+
     def post(self, request):
         experience_serializer = ExperienceSerializer(data=request.data)
 
@@ -93,6 +105,13 @@ class ExperienceProfile(APIView):
                 experience_response = ExperienceSerializer(response)
                 return Response(experience_response.data, status=status.HTTP_201_CREATED)
             return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(experience_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        experience_serializer = ExperienceSerializer(ProfessionalExperience, data=request.data)
+        if experience_serializer.is_valid():
+            experience_serializer.save()
+            return Response(experience_serializer.data, status=status.HTTP_200_OK)
         return Response(experience_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
