@@ -49,6 +49,53 @@ class education_profile(APIView):
         return Response(education_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
+class LanguageProfile(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            profile = Profile.objects.filter(user=request.user.id)
+            language_serializer = LanguagesSerializer(Languages.objects.filter(profile=profile[0].id), many=True)
+        except:
+            return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        language_serializer = LanguagesSerializer(data=request.data)
+
+        if language_serializer.is_valid():
+            response = language_serializer.create(request)
+            if response:
+                language_response = LanguagesSerializer(response)
+                return Response(language_response.data, status=status.HTTP_201_CREATED)
+            return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(language_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ExperienceProfile(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            profile = Profile.objects.filter(user=request.user.id)
+            experience_serializer = ExperienceSerializer(ProfessionalExperience.objects.filter(profile=profile[0].id),
+                                                         many=True)
+        except:
+            return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def post(self, request):
+        experience_serializer = ExperienceSerializer(data=request.data)
+
+        if experience_serializer.is_valid():
+            response = experience_serializer.create(request)
+            if response:
+                experience_response = ExperienceSerializer(response)
+                return Response(experience_response.data, status=status.HTTP_201_CREATED)
+            return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(experience_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(['GET'])
 @authentication_classes([authentication.TokenAuthentication])
 @permission_classes([permissions.IsAuthenticated])
