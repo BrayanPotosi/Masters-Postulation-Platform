@@ -78,7 +78,7 @@ class LastGrade(models.Model):
 
 
 class GottenGrade(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self) -> str:
         return f'{self.name}'
@@ -111,7 +111,7 @@ class ProfessionalExperience(models.Model):
 
 
 class CambridgeLevel(models.Model):
-    level = models.CharField(max_length=3)
+    level = models.CharField(max_length=6)
 
     def __str__(self):
         return f'{self.level}'
