@@ -172,13 +172,19 @@ def profile_form(request, page):
         if page == 1:
             profile_serializer = FisrtPageProfileSerializer(data=request.data)
             if profile_serializer.is_valid():
-                print("Serializer ------------------------------------------------", profile_serializer)
-                print("Request ------------------------------------------------", request)
-                print("Request-data ------------------------------------------------", request.data)
                 response = profile_serializer.create(request)
-                print('Response___________________________________________________', response)
                 if response:
                     profile_response = FisrtPageProfileSerializer(response)
+                    return Response(profile_response.data, status=status.HTTP_201_CREATED)
+                return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if page == 2:
+            profile_serializer = SecondPageProfileSerializer(data=request.data)
+            if profile_serializer.is_valid():
+                response = profile_serializer.create(request)
+                if response:
+                    profile_response = SecondPageProfileSerializer(response)
                     return Response(profile_response.data, status=status.HTTP_201_CREATED)
                 return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
             return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

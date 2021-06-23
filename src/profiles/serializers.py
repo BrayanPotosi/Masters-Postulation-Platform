@@ -147,16 +147,17 @@ class FisrtPageProfileSerializer(serializers.ModelSerializer):
         )
 
     def create(self, request):
-        print("request : ", request)
         data = request.data
-        print("request/data : ", data)
         try:
             user = User.objects.get(pk=request.user.id)
             civil_status = CivilStatus.objects.get(pk=data['civil_status'].get("c_status")) or None
             address_data = data["Address"]
+            birthday = data["birthday"]
+            # city = Cities.objects.get(pk=address_data.get("city"))
+            # country = Countries.objects.get(pk=address_data.get("country"))
             Address.objects.create(**address_data)
             address = Address.objects.last() or None
-            return Profile.objects.create(user=user, civil_status=civil_status, Address=address)
+            return Profile.objects.create(user=user, civil_status=civil_status, Address=address, birthday=birthday)
         except ObjectDoesNotExist:
             return None
 
@@ -177,4 +178,7 @@ class SecondPageProfileSerializer(serializers.ModelSerializer):
             'mobile_phone',
             'job_status',
         )
+
+    def create(self, request):
+        pass
 
