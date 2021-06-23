@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import fields
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 # Django
 from django.core.exceptions import ObjectDoesNotExist
 # Models
@@ -12,6 +13,7 @@ from .models import (CivilStatus, Countries,
                         LastGrade, GottenGrade,
                         CambridgeLevel,
                     )
+
 
 class CambridgeLevelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -153,4 +155,3 @@ class SecondPageProfileSerializer(serializers.ModelSerializer):
             'mobile_phone',
             'job_status',
         )
-

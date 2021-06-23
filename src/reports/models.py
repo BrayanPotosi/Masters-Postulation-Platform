@@ -1,8 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 class AdminLog(models.Model):
-    admin = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    admin = models.ForeignKey(get_user_model(), null=True, on_delete=models.SET_NULL)
     start_session = models.DateTimeField()
     end_session = models.DateTimeField()
     device = models.CharField(max_length=25)
@@ -13,7 +14,7 @@ class AdminLog(models.Model):
 
 
 class CandidateLog(models.Model):
-    candidate = models.ForeignKey(User, null=True,on_delete=models.SET_NULL)
+    candidate = models.ForeignKey(get_user_model(), null=True,on_delete=models.SET_NULL)
     start_session = models.DateTimeField()
     end_session = models.DateTimeField()
     device = models.CharField(max_length=25)

@@ -105,6 +105,13 @@ USE_L10N = True
 
 USE_TZ = True
 
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    "USER_ID_FIELD": "email",
+    "USER_CREATE_PASSWORD_RETYPE": True,
+}
+
+AUTH_USER_MODEL = 'profiles.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
