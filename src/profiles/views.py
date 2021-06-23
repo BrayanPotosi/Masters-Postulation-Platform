@@ -78,6 +78,7 @@ class education_profile(APIView):
         education_item.delete()
         return Response({"delete":"done"}, status=status.HTTP_204_NO_CONTENT)
 
+
 @api_view(['GET'])
 @authentication_classes([authentication.TokenAuthentication])
 @permission_classes([permissions.IsAuthenticated])
