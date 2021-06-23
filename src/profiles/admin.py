@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+
 from .models import (
     CivilStatus,
     JobStatus,
@@ -12,6 +14,7 @@ from .models import (
     ProfessionalExperience,
     CambridgeLevel,
     Languages,
+    User,
 )
 
 admin.site.register(CivilStatus)
@@ -26,3 +29,4 @@ admin.site.register(GottenGrade)
 admin.site.register(ProfessionalExperience)
 admin.site.register(CambridgeLevel)
 admin.site.register(Languages)
+admin.site.register(User, UserAdmin)
