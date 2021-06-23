@@ -170,10 +170,13 @@ def profile_form(request, page):
     elif request.method == 'POST':
 
         if page == 1:
-            request.data['user']
             profile_serializer = FisrtPageProfileSerializer(data=request.data)
             if profile_serializer.is_valid():
+                print("Serializer ------------------------------------------------", profile_serializer)
+                print("Request ------------------------------------------------", request)
+                print("Request-data ------------------------------------------------", request.data)
                 response = profile_serializer.create(request)
+                print('Response___________________________________________________', response)
                 if response:
                     profile_response = FisrtPageProfileSerializer(response)
                     return Response(profile_response.data, status=status.HTTP_201_CREATED)

@@ -147,16 +147,16 @@ class FisrtPageProfileSerializer(serializers.ModelSerializer):
         )
 
     def create(self, request):
-        print(f"-------------------------------------------\n")
-        print(request)
-        print(type(request))
-        print(f"-------------------------------------------\n")
+        print("request : ", request)
         data = request.data
-        print(data)
+        print("request/data : ", data)
         try:
-            civil_status = CivilStatus.objects.get(pk=data.get('civil_status_id')) or None
-            address = Address.objects.get(pk=data.get('Address_id')) or None
-            return Profile.objects.create(user=request.user.id, civil_status=civil_status, address=address, **data)
+            user = User.objects.get(pk=request.user.id)
+            civil_status = CivilStatus.objects.get(pk=data['civil_status'].get("c_status")) or None
+            address_data = data["Address"]
+            Address.objects.create(**address_data)
+            address = Address.objects.last() or None
+            return Profile.objects.create(user=user, civil_status=civil_status, Address=address)
         except ObjectDoesNotExist:
             return None
 
