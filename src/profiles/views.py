@@ -243,3 +243,13 @@ def profile_form(request, page):
                     return Response(response.data)
                 raise Http404
             return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if page == 2:
+            profile_serializer = SecondPageProfileSerializer(data=request.data)
+            if profile_serializer.is_valid():
+                response = profile_serializer.create(request)
+                if response:
+                    profile_response = SecondPageProfileSerializer(response)
+                    return Response(profile_response.data, status=status.HTTP_201_CREATED)
+                return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)

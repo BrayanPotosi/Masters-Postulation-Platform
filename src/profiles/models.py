@@ -3,9 +3,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User, BaseUserManager, AbstractUser, UserManager
 from typing import Optional
+
 # Models
 from administration.models import Score
 # Models
+
 
 class OverrideUserManager(UserManager):
 
@@ -40,7 +42,6 @@ class OverrideUserManager(UserManager):
         return user
 
 
-
 class User(AbstractUser):
     username = models.CharField(max_length=150, blank=True)
     email = models.EmailField(unique=True)
@@ -50,8 +51,6 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
     USERNAME_FIELD = 'email'
 
-    
-     
 
 class CivilStatus(models.Model):
     c_status = models.CharField(max_length=50, blank=True, null=True)
