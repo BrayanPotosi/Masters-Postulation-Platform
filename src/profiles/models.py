@@ -87,11 +87,11 @@ class Cities(models.Model):
 
 
 class Address(models.Model):
-    address_line1 = models.CharField(max_length=150)
-    address_line2 = models.CharField(max_length=150)
-    postal_code = models.CharField(max_length=20)
-    city = models.ForeignKey(Cities,null=True ,on_delete=models.SET_NULL)
-    country = models.ForeignKey(Countries, null=True, on_delete=models.SET_NULL)
+    address_line1 = models.CharField(max_length=150, blank=True, null=True)
+    address_line2 = models.CharField(max_length=150, blank=True, null=True)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+    city = models.ForeignKey(Cities, null=True, blank=True, on_delete=models.SET_NULL)
+    country = models.ForeignKey(Countries, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'{self.postal_code}, {self.city}, {self.country}'

@@ -131,6 +131,16 @@ class AddressSerializer(serializers.ModelSerializer):
         )
         depth = 1
 
+        def update(self, instance, data):
+            try:
+                print(instance)
+                instance.country = data.get('country')
+                instance.save()
+                return instance
+            except ObjectDoesNotExist:
+                return None
+
+
 class JobStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -159,21 +169,6 @@ class FisrtPageProfileSerializer(serializers.ModelSerializer):
             'Address',
         )
 
-    def create(self, request):
-        print(f"-------------------------------------------\n")
-        print(request)
-        print(type(request))
-        print(f"-------------------------------------------\n")
-        data = request.data
-        print(data)
-        try:
-            civil_status = CivilStatus.objects.get(pk=data.get('civil_status_id')) or None
-            address = Address.objects.get(pk=data.get('Address_id')) or None
-            return Profile.objects.create(user=request.user.id, civil_status=civil_status, address=address, **data)
-        except ObjectDoesNotExist:
-            return None
-
-
 class SecondPageProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     Address = AddressSerializer()
@@ -190,3 +185,20 @@ class SecondPageProfileSerializer(serializers.ModelSerializer):
             'mobile_phone',
             'job_status',
         )
+
+class ProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Profile
+        fields = '__all__'
+
+        depth = 1
+    
+        def update(self, instance, data):
+            try:
+                instance.birthday = data.get("birthday")
+                instance.c_status = CivilStatus.objects.get(pk=data.get('c_status')) or None
+                instance.save()
+                return instance
+            except ObjectDoesNotExist:
+                return None
