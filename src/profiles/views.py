@@ -8,16 +8,17 @@ from rest_framework.authentication import TokenAuthentication
 from django.http import Http404
 # Serializers
 from .serializers import ( 
-                            CambridgeLevelSerializer, ExperienceSerializer, 
+                            AddressSerializer, CambridgeLevelSerializer, ExperienceSerializer, 
                             FisrtPageProfileSerializer, SecondPageProfileSerializer, 
                             EducationSerializer, LanguagesSerializer,
                             CitiesSerializer, CountriesSerializer,
                             GottenGradeSerializer, LastGradeSerializer,
                             CivilStatusSerializer, CambridgeLevel,
+                            ProfileSerializer, UserSerializer,
                         )
 # Models
 from .models import (
-                        Cities, CivilStatus, 
+                        Address, Cities, CivilStatus, 
                         Countries, Education, 
                         GottenGrade, LastGrade, 
                         Profile, ProfessionalExperience, 
@@ -197,16 +198,50 @@ def profile_form(request, page):
         else:
             return Response({"response": "page not found"}, status=404)
 
-    elif request.method == 'POST':
+    elif request.method == 'PUT':
 
         if page == 1:
-            profile_serializer = FisrtPageProfileSerializer(data=request.data)
+            profile = Profile.objects.get(user=request.user.id)
+            user = request.user
+            
+            data = request.data
+
+            user_data = {
+                "email": data.get("email"),
+                "first_name": data.get("first_name"),
+                "last_name": data.get("last_name")
+            }
+            profile_data = {
+                "user":user,
+                "birthday": data.get("birthday"),
+                "civil_status": CivilStatus.objects.get(pk= data.get("c_status"))
+            }
+            address_data = {
+                "country":Countries.objects.get(pk=data.get("country"))
+            }
+
+            address_item = profile.Address
+
+            address_serializer = AddressSerializer(address_item, data=address_data)
+            if address_serializer.is_valid():
+                address_serializer.update(address_item, address_data)
+            else:
+                return Response(address_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+            user_serializer = UserSerializer(user, data=user_data)
+            if user_serializer.is_valid():
+                user_serializer.save()
+            else:
+                return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            profile_serializer = ProfileSerializer(profile, data=profile_data)
             if profile_serializer.is_valid():
-                response = profile_serializer.create(request)
-                if response:
-                    profile_response = FisrtPageProfileSerializer(response)
-                    return Response(profile_response.data, status=status.HTTP_201_CREATED)
-                return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+                profile_response = profile_serializer.update(profile, profile_data)
+                if profile_response:
+                    response = FisrtPageProfileSerializer(profile_response)
+                    return Response(response.data)
+                raise Http404
             return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         if page == 2:

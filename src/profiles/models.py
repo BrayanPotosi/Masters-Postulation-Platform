@@ -1,5 +1,4 @@
 from django.db import models
-from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User, BaseUserManager, AbstractUser, UserManager
@@ -87,18 +86,18 @@ class Cities(models.Model):
 
 
 class Address(models.Model):
-    address_line1 = models.CharField(max_length=150)
-    address_line2 = models.CharField(max_length=150)
-    postal_code = models.CharField(max_length=20)
-    city = models.ForeignKey(Cities,null=True ,on_delete=models.SET_NULL)
-    country = models.ForeignKey(Countries, null=True, on_delete=models.SET_NULL)
+    address_line1 = models.CharField(max_length=150, blank=True, null=True)
+    address_line2 = models.CharField(max_length=150, blank=True, null=True)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+    city = models.ForeignKey(Cities, null=True, blank=True, on_delete=models.SET_NULL)
+    country = models.ForeignKey(Countries, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'{self.postal_code}, {self.city}, {self.country}'
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     birthday = models.DateField(blank=True, null=True)
     score = models.ForeignKey(Score, null=True, blank=True ,on_delete=models.SET_NULL)
     total_score = models.PositiveIntegerField(blank=True, null=True)

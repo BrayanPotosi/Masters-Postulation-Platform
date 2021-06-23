@@ -101,7 +101,6 @@ class EducationSerializer(serializers.ModelSerializer):
             return None
 
 
-
 class LanguagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Languages
@@ -132,6 +131,16 @@ class AddressSerializer(serializers.ModelSerializer):
         )
         depth = 1
 
+        def update(self, instance, data):
+            try:
+                print(instance)
+                instance.country = data.get('country')
+                instance.save()
+                return instance
+            except ObjectDoesNotExist:
+                return None
+
+
 class JobStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -160,22 +169,6 @@ class FisrtPageProfileSerializer(serializers.ModelSerializer):
             'Address',
         )
 
-    def create(self, request):
-        data = request.data
-        try:
-            user = User.objects.get(pk=request.user.id)
-            civil_status = CivilStatus.objects.get(pk=data['civil_status'].get("c_status")) or None
-            address_data = data["Address"]
-            birthday = data["birthday"]
-            # city = Cities.objects.get(pk=address_data.get("city"))
-            # country = Countries.objects.get(pk=address_data.get("country"))
-            Address.objects.create(**address_data)
-            address = Address.objects.last() or None
-            return Profile.objects.create(user=user, civil_status=civil_status, Address=address, birthday=birthday)
-        except ObjectDoesNotExist:
-            return None
-
-
 class SecondPageProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     Address = AddressSerializer()
@@ -193,6 +186,19 @@ class SecondPageProfileSerializer(serializers.ModelSerializer):
             'job_status',
         )
 
-    def create(self, request):
-        pass
+class ProfileSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = Profile
+        fields = '__all__'
+
+        depth = 1
+    
+        def update(self, instance, data):
+            try:
+                instance.birthday = data.get("birthday")
+                instance.c_status = CivilStatus.objects.get(pk=data.get('c_status')) or None
+                instance.save()
+                return instance
+            except ObjectDoesNotExist:
+                return None
