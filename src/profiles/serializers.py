@@ -71,6 +71,17 @@ class ExperienceSerializer(serializers.ModelSerializer):
         except ObjectDoesNotExist:
             return None
 
+    def update(self, instance, data):
+        try:
+            instance.company_name = data.get('company_name')
+            instance.start = data.get('start')
+            instance.end = data.get('end')
+            instance.description = data.get('description')
+            instance.save()
+            return instance
+        except ObjectDoesNotExist:
+            return None
+
 
 class EducationSerializer(serializers.ModelSerializer):
 
@@ -112,7 +123,16 @@ class LanguagesSerializer(serializers.ModelSerializer):
         try:
             profile = Profile.objects.get(user=request.user.id)
             level = CambridgeLevel.objects.get(pk=data.get('level_id')) or None
-            return Education.objects.create(profile=profile, level=level, **data)
+            return ProfessionalExperience.objects.create(profile=profile, level=level, **data)
+        except ObjectDoesNotExist:
+            return None
+
+    def update(self, instance, data):
+        try:
+            instance.level = CambridgeLevel.objects.get(pk=data.get('level_id')) or None
+            instance.language = data.get('language')
+            instance.save()
+            return instance
         except ObjectDoesNotExist:
             return None
 
