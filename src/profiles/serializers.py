@@ -218,6 +218,8 @@ class ProfileSerializer(serializers.ModelSerializer):
             try:
                 instance.birthday = data.get("birthday")
                 instance.c_status = CivilStatus.objects.get(pk=data.get('c_status')) or None
+                if data.get('Address'):
+                    instance.Address = data.get('Address')
                 instance.save()
                 return instance
             except ObjectDoesNotExist:

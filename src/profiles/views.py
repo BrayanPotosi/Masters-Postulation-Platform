@@ -203,7 +203,6 @@ def profile_form(request, page):
         if page == 1:
             profile = Profile.objects.get(user=request.user.id)
             user = request.user
-            
             data = request.data
 
             user_data = {
@@ -221,7 +220,9 @@ def profile_form(request, page):
             }
 
             address_item = profile.Address
-
+            if address_item is None:
+                address_item = Address.objects.create()
+                profile_data['Address'] = address_item       
             address_serializer = AddressSerializer(address_item, data=address_data)
             if address_serializer.is_valid():
                 address_serializer.update(address_item, address_data)

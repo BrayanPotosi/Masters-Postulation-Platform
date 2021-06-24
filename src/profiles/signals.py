@@ -7,8 +7,5 @@ User = get_user_model()
 
 @receiver(post_save, sender=User)
 def post_save_create_profile(sender, instance, created, **kwargs):
-    print('sender',sender)
-    print('instance',instance)
-    print('created', created)
     if created:
         Profile.objects.create(user=instance)
