@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 # Django
 from django.http import Http404
+from django.core.exceptions import ObjectDoesNotExist
 # Serializers
 from .serializers import ( 
                             AddressSerializer, CambridgeLevelSerializer, ExperienceSerializer, 
@@ -210,14 +211,17 @@ def profile_form(request, page):
                 "first_name": data.get("first_name"),
                 "last_name": data.get("last_name")
             }
-            profile_data = {
-                "user":user,
-                "birthday": data.get("birthday"),
-                "civil_status": CivilStatus.objects.get(pk= data.get("c_status"))
-            }
-            address_data = {
-                "country":Countries.objects.get(pk=data.get("country"))
-            }
+            try:
+                profile_data = {
+                    "user":user,
+                    "birthday": data.get("birthday"),
+                    "civil_status": CivilStatus.objects.get(pk= data.get("c_status"))
+                }
+                address_data = {
+                    "country":Countries.objects.get(pk=data.get("country"))
+                }
+            except ObjectDoesNotExist:
+                raise Http404
 
             address_item = profile.Address
             if address_item is None:
