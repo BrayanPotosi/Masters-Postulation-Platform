@@ -51,6 +51,7 @@ class UserSerializer(serializers.ModelSerializer):
         model=User
         fields = (
             'email',
+            'username',
             'first_name',
             'last_name',
             'username',
@@ -187,6 +188,8 @@ class FisrtPageProfileSerializer(serializers.ModelSerializer):
             'birthday',
             'civil_status',
             'Address',
+            'home_phone',
+            'mobile_phone',
         )
 
 class SecondPageProfileSerializer(serializers.ModelSerializer):
@@ -200,9 +203,6 @@ class SecondPageProfileSerializer(serializers.ModelSerializer):
             'id',
             'user',
             'Address',
-            'home_phone',
-            'work_phone',
-            'mobile_phone',
             'job_status',
         )
 

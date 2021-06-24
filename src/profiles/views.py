@@ -207,21 +207,26 @@ def profile_form(request, page):
             data = request.data
 
             user_data = {
-                "email": data.get("email"),
+                "email": user.email,
                 "first_name": data.get("first_name"),
-                "last_name": data.get("last_name")
+                "last_name": data.get("last_name"),
+                "username": data.get("username")
             }
             try:
                 profile_data = {
                     "user":user,
                     "birthday": data.get("birthday"),
-                    "civil_status": CivilStatus.objects.get(pk= data.get("c_status"))
+                    "civil_status": CivilStatus.objects.get(pk= data.get("c_status")),
+                    "home_phone": data.get("home_phone"),
+                    "mobile_phone": data.get("mobile_phone")
                 }
                 address_data = {
-                    "country":Countries.objects.get(pk=data.get("country"))
+                    "country":Countries.objects.get(pk=data.get("country")),
+                    "city": Cities.objects.get(pk=data.get("city")),
+                    "address_line1": data.get("address_line1")
                 }
             except ObjectDoesNotExist:
-                raise Http404
+                return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
 
             address_item = profile.Address
             if address_item is None:
