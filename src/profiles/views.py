@@ -165,7 +165,12 @@ def job_status(request):
                 profile.job_status = job_status
                 profile.save()
             job_status_serializer = JobStatusSerializer(job_status)
-            return Responses.make_response(data=job_status_serializer.data)
+            experience_list = ExperienceSerializer(ProfessionalExperience.objects.filter(profile=profile.id), many=True)
+            data = {
+                "job_status": job_status_serializer.data,
+                "professional_experience": experience_list.data
+            }
+            return Responses.make_response(data=data)
         except:
             return Responses.make_response(data={}, error=True, 
                     message="Server Error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
