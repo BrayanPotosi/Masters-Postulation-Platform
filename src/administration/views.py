@@ -1,16 +1,36 @@
+import math
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework import serializers, status, authentication, permissions
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import get_user_model
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-
+from rest_framework.generics import ListAPIView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 from profiles.models import Profile
 from .serializers import CandidatesListSerializer
-
+from profiles.serializers import UserSerializer
 from utils.responses import Responses
+
+User = get_user_model()
+
+class administrators_view(ListAPIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    queryset = User.objects.filter(is_staff=True)
+
+    def list(self, request):
+        queryset = self.get_queryset()
+        serializer = UserSerializer(queryset, many=True)
+        total_administrators = queryset.count()
+        data = {
+                "count": total_administrators,
+                "data": serializer.data
+                }
+        return Responses.make_response(data=data)
 
 @api_view(['GET'])
 @authentication_classes([authentication.TokenAuthentication])
@@ -37,7 +57,9 @@ def candidates_view(request):
             # If page is out of range, deliver last page of results.
             profile_list = paginator.page(paginator.num_pages)
         data_serializer = CandidatesListSerializer(profile_list, many=True)
-        data = {   
+        total_pages = math.ceil(total_candidates/int(items_per_page))
+        data = {
+                "pages":total_pages,   
                 "count": total_candidates,
                 "data": data_serializer.data
                 }
@@ -46,7 +68,3 @@ def candidates_view(request):
         return Responses.make_response(error=True, 
                                         message="Server error: Value error, ippage is not a number",
                                         status=status.HTTP_400_BAD_REQUEST)
-
-    
-
-    
