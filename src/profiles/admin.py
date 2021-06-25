@@ -17,6 +17,7 @@ from .models import (
     User,
 )
 
+admin.site.register(User, UserAdmin) 
 admin.site.register(CivilStatus)
 admin.site.register(JobStatus)
 admin.site.register(Countries)
@@ -29,4 +30,3 @@ admin.site.register(GottenGrade)
 admin.site.register(ProfessionalExperience)
 admin.site.register(CambridgeLevel)
 admin.site.register(Languages)
-admin.site.register(User, UserAdmin)
