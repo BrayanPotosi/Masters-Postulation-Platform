@@ -32,6 +32,7 @@ class administrators_view(ListAPIView):
                 }
         return Responses.make_response(data=data)
 
+
 @api_view(['GET'])
 @authentication_classes([authentication.TokenAuthentication])
 @permission_classes([permissions.IsAuthenticated, permissions.IsAdminUser])
@@ -66,5 +67,5 @@ def candidates_view(request):
         return Responses.make_response(data=data)
     except ValueError:
         return Responses.make_response(error=True, 
-                                        message="Server error: Value error, ippage is not a number",
+                                        message="Server error",
                                         status=status.HTTP_400_BAD_REQUEST)

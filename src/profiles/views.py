@@ -48,13 +48,13 @@ class education_profile(APIView):
 
     def get(self, request):
         try:
-            profile = Profile.objects.filter(user=request.user.id)
-            education_serializer = EducationSerializer(Education.objects.filter(profile=profile[0].id), many=True)
+            profile = Profile.objects.get(user=request.user.id)
+            education_serializer = EducationSerializer(Education.objects.filter(profile=profile.id), many=True)
         except:
-            # return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
-            raise Http404
+            return Responses.make_response(error=True, message="Server error", 
+                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response(education_serializer.data)
+        return Responses.make_response(data=education_serializer.data)
     
     def post(self, request):
         education_serializer = EducationSerializer(data=request.data)
@@ -62,10 +62,10 @@ class education_profile(APIView):
             response = education_serializer.create(request)
             if response :
                 education_response = EducationSerializer(response)
-                return Response(education_response.data, status=status.HTTP_201_CREATED)
-            # return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
-            raise Http404
-        return Response(education_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Responses.make_response(data=education_response.data, status=status.HTTP_201_CREATED)
+            return Responses.make_response(error=True, message="Server error", 
+                                            status=status.status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Responses.make_response(error=True, message=education_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request):
             education_item = self.get_object(request, request.data.get('education_id'))
@@ -74,14 +74,16 @@ class education_profile(APIView):
                 education_response = education_serializer.update(education_item, request.data)
                 if education_response:
                     response = EducationSerializer(education_response)
-                    return Response(response.data)
-                raise Http404
-            return Response(education_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return Responses.make_response(data=response.data)
+                return Responses.make_response(error=True, message="Server error", 
+                                                status=status.status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Responses.make_response(error=True, message=education_serializer.errors, 
+                                            status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request):
         education_item = self.get_object(request, request.data.get('education_id'))
         education_item.delete()
-        return Response({"delete":"done"}, status=status.HTTP_204_NO_CONTENT)
+        return Responses.make_response(data={"delete":"done"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class LanguageProfile(APIView):
@@ -208,11 +210,11 @@ def profile_form(request):
         }
         profile = Profile.objects.filter(user=request.user.id)
         serializer = FisrtPageProfileSerializer(profile, many=True)
-
-        return Response({
-                            "profile": serializer.data,
-                            "options": options,
-                        })
+        data = {
+                    "profile": serializer.data,
+                    "options": options,
+                }
+        return Responses.make_response(data=data)
     
     elif request.method == 'PUT':
 
@@ -250,23 +252,26 @@ def profile_form(request):
             if address_serializer.is_valid():
                 address_serializer.update(address_item, address_data)
             else:
-                return Response(address_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Responses.make_response(error=True, message=address_serializer.errors, 
+                                            status=status.HTTP_400_BAD_REQUEST)
 
 
             user_serializer = UserSerializer(user, data=user_data)
             if user_serializer.is_valid():
                 user_serializer.save()
             else:
-                return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Responses.make_response(error=True, message=user_serializer.errors, 
+                                            status=status.HTTP_400_BAD_REQUEST)
             
             profile_serializer = ProfileSerializer(profile, data=profile_data)
             if profile_serializer.is_valid():
                 profile_response = profile_serializer.update(profile, profile_data)
                 if profile_response:
                     response = FisrtPageProfileSerializer(profile_response)
-                    return Response(response.data)
+                    return Responses.make_response(data=response.data)
                 raise Http404
-            return Response(profile_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Responses.make_response(error=True, message= profile_serializer.errors, 
+                                            status=status.HTTP_400_BAD_REQUEST)
     else:
         return Responses.make_response(error=True, message="method not allowed",
                                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
