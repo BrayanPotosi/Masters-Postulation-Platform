@@ -81,7 +81,7 @@ class Countries(models.Model):
 
 class Cities(models.Model):
     city_name = models.CharField(max_length=60)
-    country = models.ForeignKey(Countries, on_delete=models.CASCADE)
+    country = models.ForeignKey(Countries, default=1 ,on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.city_name}'
@@ -102,7 +102,7 @@ class Profile(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     birthday = models.DateField(blank=True, null=True)
     score = models.ForeignKey(Score, null=True, blank=True ,on_delete=models.SET_NULL)
-    total_score = models.PositiveIntegerField(blank=True, null=True)
+    total_score = models.PositiveIntegerField(blank=True, null=True, default=0)
     civil_status = models.ForeignKey(CivilStatus, null=True, blank=True, on_delete=models.SET_NULL)
     Address = models.ForeignKey(Address, null=True, blank=True, on_delete=models.SET_NULL)
     home_phone = models.CharField(max_length=15, blank=True, null=True)

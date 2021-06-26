@@ -16,6 +16,7 @@ from utils.responses import Responses
 
 User = get_user_model()
 
+
 class administrators_view(ListAPIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
@@ -42,12 +43,16 @@ def candidates_view(request):
     page_num = request.query_params.get('page')    
     items_pp_query = request.query_params.get('ippage')
     sort_option = request.query_params.get('sort')
-    print('sort',sort_option)
+    order = 'total_score'
+    if sort_option == 'desc':
+        order = '-total_score'
+
+        
     try:
         if items_pp_query is not None:
             items_per_page = items_pp_query
 
-        profile_list = Profile.objects.all()
+        profile_list = Profile.objects.order_by(order)
         total_candidates = profile_list.count()
         paginator = Paginator(profile_list,items_per_page)
         try:
