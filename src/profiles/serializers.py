@@ -84,6 +84,7 @@ class ExperienceSerializer(serializers.ModelSerializer):
             return None
 
 
+
 class EducationSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -124,7 +125,7 @@ class LanguagesSerializer(serializers.ModelSerializer):
         try:
             profile = Profile.objects.get(user=request.user.id)
             level = CambridgeLevel.objects.get(pk=data.get('level_id')) or None
-            return ProfessionalExperience.objects.create(profile=profile, level=level, **data)
+            return Languages.objects.create(profile=profile, level=level, **data)
         except ObjectDoesNotExist:
             return None
 

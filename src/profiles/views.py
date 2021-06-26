@@ -85,6 +85,16 @@ class LanguageProfile(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def get_object(self, request, pk):
+        try:
+            profile = Profile.objects.get(user=request.user.id)
+            language_obj = Languages.objects.get(pk=pk)
+            if language_obj.profile == profile:
+                return language_obj
+            raise Http404
+        except:
+            raise Http404
+
     def get(self, request):
         try:
             profile = Profile.objects.filter(user=request.user.id)
@@ -101,20 +111,43 @@ class LanguageProfile(APIView):
             if response:
                 language_response = LanguagesSerializer(response)
                 return Response(language_response.data, status=status.HTTP_201_CREATED)
-            return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+            raise Http404
         return Response(language_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
-        language_serializer = LanguagesSerializer(Languages, data=request.data)
+        language_item = self.get_object(request, request.data.get('language_id'))
+        language_serializer = LanguagesSerializer(language_item, data=request.data)
         if language_serializer.is_valid():
-            language_serializer.save()
-            return Response(language_serializer.data, status=status.HTTP_200_OK)
+            language_response = language_serializer.update(language_item, request.data)
+            if language_response:
+                response = LanguagesSerializer(language_response)
+                return Response(response.data)
+            raise Http404
         return Response(language_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request):
+        try:
+            language_item = self.get_object(request, request.data.get('language_id'))
+            language_item.delete()
+            return Response({"delete": "done"}, status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response({"delete": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
 
 
 class ExperienceProfile(APIView):
+
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+
+    def get_object(self, request, pk):
+        try:
+            profile = Profile.objects.get(user=request.user.id)
+            experience_obj = ProfessionalExperience.objects.get(pk=pk)
+            if experience_obj.profile == profile:
+                return experience_obj
+            raise Http404
+        except:
+            raise Http404
 
     def get(self, request):
         try:
@@ -137,15 +170,24 @@ class ExperienceProfile(APIView):
         return Response(experience_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
-        experience_serializer = ExperienceSerializer(ProfessionalExperience, data=request.data)
+        experience_item = self.get_object(request, request.data.get('experience_id'))
+        experience_serializer = ExperienceSerializer(experience_item, data=request.data)
         if experience_serializer.is_valid():
-            experience_serializer.save()
-            return Response(experience_serializer.data, status=status.HTTP_200_OK)
+            experience_response = experience_serializer.update(experience_item, request.data)
+            if experience_response:
+                response = ExperienceSerializer(experience_response)
+                return Response(response.data)
+            raise Http404
         return Response(experience_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
-        education = Education.objects.filter(user=request.user.id)
-        education.delete()
+        try:
+            experience_item = self.get_object(request, request.data.get('experience_id'))
+            experience_item.delete()
+            return Response({"delete": "done"}, status=status.HTTP_204_NO_CONTENT)
+        except:
+            return Response({"delete": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
 
 
 @api_view(['GET', 'POST', 'PUT'])
