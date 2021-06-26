@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Score(models.Model):
     job_status_score = models.PositiveIntegerField(null=True, blank=True)
     language_score = models.PositiveIntegerField(null=True, blank=True)

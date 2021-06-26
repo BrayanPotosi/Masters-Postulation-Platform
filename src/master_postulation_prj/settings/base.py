@@ -113,6 +113,7 @@ DJOSER = {
 
 AUTH_USER_MODEL = 'profiles.User'
 
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # 'rest_framework.authentication.BasicAuthentication',

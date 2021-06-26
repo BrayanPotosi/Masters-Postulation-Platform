@@ -2,9 +2,13 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User, BaseUserManager, AbstractUser, UserManager
+
 from typing import Optional
+
 # Models
 from administration.models import Score
+# Models
+
 
 class OverrideUserManager(UserManager):
 
@@ -39,7 +43,6 @@ class OverrideUserManager(UserManager):
         return user
 
 
-
 class User(AbstractUser):
     username = models.CharField(max_length=150, blank=True)
     email = models.EmailField(unique=True)
@@ -49,14 +52,13 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
     USERNAME_FIELD = 'email'
 
-    
-     
 
 class CivilStatus(models.Model):
     c_status = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self) -> str:
         return f'C_status:{self.c_status}'
+
 
 class JobStatus(models.Model):
     has_job = models.BooleanField(default=False, null=False)
@@ -79,19 +81,22 @@ class Countries(models.Model):
 
 class Cities(models.Model):
     city_name = models.CharField(max_length=60)
+    country = models.ForeignKey(Countries, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.city_name}'
 
+
 class Address(models.Model):
-    address_line1 = models.CharField(max_length=150)
-    address_line2 = models.CharField(max_length=150)
-    postal_code = models.CharField(max_length=20)
-    city = models.ForeignKey(Cities,null=True ,on_delete=models.SET_NULL)
-    country = models.ForeignKey(Countries, null=True, on_delete=models.SET_NULL)
+    address_line1 = models.CharField(max_length=150, blank=True, null=True)
+    address_line2 = models.CharField(max_length=150, blank=True, null=True)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+    city = models.ForeignKey(Cities, null=True, blank=True, on_delete=models.SET_NULL)
+    country = models.ForeignKey(Countries, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f'{self.postal_code}, {self.city}, {self.country}'
+
 
 class Profile(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
@@ -112,17 +117,20 @@ class Profile(models.Model):
     def __str__(self) -> str:
         return f'{self.score} user:{self.user}'
 
+
 class LastGrade(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self) -> str:
         return f'{self.name}'
 
+
 class GottenGrade(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self) -> str:
         return f'{self.name}'
+
 
 class Education(models.Model):
     profile = models.ForeignKey(Profile, null=True ,on_delete=models.SET_NULL)
@@ -137,7 +145,6 @@ class Education(models.Model):
         return f'{self.institution_name}'
 
 
-
 class ProfessionalExperience(models.Model):
     profile = models.ForeignKey(Profile, null=True, on_delete=models.SET_NULL)
     company_name = models.CharField(max_length=50, null=True, blank=True)
@@ -150,11 +157,13 @@ class ProfessionalExperience(models.Model):
     def __str__(self):
         return f'{self.profile}, {self.company_name}'
 
+
 class CambridgeLevel(models.Model):
     level = models.CharField(max_length=6)
 
     def __str__(self):
         return f'{self.level}'
+
 
 class Languages(models.Model):
     profile = models.ForeignKey(Profile, null=True ,on_delete=models.SET_NULL)
