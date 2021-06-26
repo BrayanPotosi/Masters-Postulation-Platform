@@ -39,9 +39,10 @@ class administrators_view(ListAPIView):
 def candidates_view(request):
     ITEMS_PER_PAGE = 2
     items_per_page = ITEMS_PER_PAGE
-    page_num = request.query_params.get('page')
-    
+    page_num = request.query_params.get('page')    
     items_pp_query = request.query_params.get('ippage')
+    sort_option = request.query_params.get('sort')
+    print('sort',sort_option)
     try:
         if items_pp_query is not None:
             items_per_page = items_pp_query

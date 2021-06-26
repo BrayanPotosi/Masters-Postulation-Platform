@@ -113,6 +113,11 @@ class Profile(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        if self.score is None:
+            self.score = Score.objects.create()
+        return super().save(*args, **kwargs)
+
     def __str__(self) -> str:
         return f'{self.score} user:{self.user}'
 
