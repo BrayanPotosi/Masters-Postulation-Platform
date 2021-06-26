@@ -81,6 +81,7 @@ class Countries(models.Model):
 
 class Cities(models.Model):
     city_name = models.CharField(max_length=60)
+    country = models.ForeignKey(Countries, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.city_name}'
