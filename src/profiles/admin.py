@@ -2,22 +2,22 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .models import (
-    CivilStatus,
-    JobStatus,
-    Countries,
-    Cities,
-    Address,
-    Profile,
-    LastGrade,
-    GottenGrade,
-    Education,
-    ProfessionalExperience,
-    CambridgeLevel,
-    Languages,
+    CivilStatus, JobStatus,
+    Countries, Cities,
+    Address, Profile,
+    LastGrade, GottenGrade,
+    Education, ProfessionalExperience,
+    CambridgeLevel, Languages,
     User,
 )
 
-admin.site.register(User, UserAdmin) 
+@admin.register(User)
+class AuthorAdmin(admin.ModelAdmin):
+    fields= ('email', 'password','is_staff','first_name', 'last_name',)
+
+
+
+# admin.site.register(User, UserAdmin) 
 admin.site.register(CivilStatus)
 admin.site.register(JobStatus)
 admin.site.register(Countries)
