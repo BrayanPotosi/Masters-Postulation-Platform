@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, GenericAPIView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
@@ -14,7 +14,36 @@ from .serializers import CandidatesListSerializer
 from profiles.serializers import UserSerializer
 from utils.responses import Responses
 
+from djoser.conf import settings
+from djoser.views import UserViewSet
+from djoser import utils
+from djoser.serializers import TokenCreateSerializer
+
+
+
 User = get_user_model()
+
+"""Signup and login override Djoser methods
+"""
+class SignUp(UserViewSet):
+ 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        # Login userd just created
+        # _ = request.data.pop('re_password')
+        serializer_token = TokenCreateSerializer(data=request.data)
+        serializer_token.is_valid(raise_exception=True)
+        token = utils.login_user(self.request, serializer_token.user)
+        token_serializer_class = settings.SERIALIZERS.token
+        data = {
+            "signup": serializer.data,
+            "login": token_serializer_class(token).data
+        }
+        return Responses.make_response(
+            data=data, status=status.HTTP_200_OK
+        )
 
 
 class administrators_view(ListAPIView):
