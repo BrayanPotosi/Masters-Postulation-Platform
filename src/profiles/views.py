@@ -1,3 +1,4 @@
+from copy import error
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import serializers, status, authentication, permissions
@@ -9,6 +10,8 @@ from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
 # Custom classes
 from utils.responses import Responses
+from utils.constants import CONSTANTS
+
 # Serializers
 from .serializers import ( 
                             AddressSerializer, CambridgeLevelSerializer, ExperienceSerializer, 
@@ -28,6 +31,8 @@ from .models import (
                         Profile, ProfessionalExperience, 
                         Languages, JobStatus,
                     )
+
+
 """Endpoint education [POST, GET]:
    GET: Give a response with all education that match with an user-profile
    POST: Create a new row with education into user-profile
@@ -40,18 +45,21 @@ class education_profile(APIView):
         try:
             profile = Profile.objects.get(user=request.user.id)
             education_obj = Education.objects.get(pk=pk)
+            print(profile)
+            print(education_obj)
             if education_obj.profile == profile:
                 return education_obj
             raise Http404
         except:
             raise Http404
+    
 
     def get(self, request):
         try:
             profile = Profile.objects.get(user=request.user.id)
             education_serializer = EducationSerializer(Education.objects.filter(profile=profile.id), many=True)
         except:
-            return Responses.make_response(error=True, message="Server error", 
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
                                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Responses.make_response(data=education_serializer.data)
@@ -63,22 +71,22 @@ class education_profile(APIView):
             if response :
                 education_response = EducationSerializer(response)
                 return Responses.make_response(data=education_response.data, status=status.HTTP_201_CREATED)
-            return Responses.make_response(error=True, message="Server error", 
-                                            status=status.status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
+                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Responses.make_response(error=True, message=education_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def put(self, request):
-            education_item = self.get_object(request, request.data.get('education_id'))
-            education_serializer = EducationSerializer(education_item, data=request.data)
-            if education_serializer.is_valid():
-                education_response = education_serializer.update(education_item, request.data)
-                if education_response:
-                    response = EducationSerializer(education_response)
-                    return Responses.make_response(data=response.data)
-                return Responses.make_response(error=True, message="Server error", 
-                                                status=status.status.HTTP_500_INTERNAL_SERVER_ERROR)
-            return Responses.make_response(error=True, message=education_serializer.errors, 
-                                            status=status.HTTP_400_BAD_REQUEST)
+        education_item = self.get_object(request, request.data.get('education_id'))
+        education_serializer = EducationSerializer(education_item, data=request.data)
+        if education_serializer.is_valid():
+            education_response = education_serializer.update(education_item, request.data)
+            if education_response:
+                response = EducationSerializer(education_response)
+                return Responses.make_response(data=response.data)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
+                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Responses.make_response(error=True, message=education_serializer.errors, 
+                                        status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request):
         education_item = self.get_object(request, request.data.get('education_id'))
@@ -96,18 +104,20 @@ class LanguageProfile(APIView):
             language_obj = Languages.objects.get(pk=pk)
             if language_obj.profile == profile:
                 return language_obj
-            raise Http404
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
+                            status=status.HTTP_400_BAD_REQUEST)
         except:
-            raise Http404
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
+                            status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
         try:
             profile = Profile.objects.filter(user=request.user.id)
             language_serializer = LanguagesSerializer(Languages.objects.filter(profile=profile[0].id), many=True)
         except:
-            return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+            return Responses.make_response(error=True,message=CONSTANTS.get('error_server') , status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(language_serializer.data)
+        return Responses.make_response(data=language_serializer.data)
 
     def post(self, request):
         language_serializer = LanguagesSerializer(data=request.data)
@@ -115,9 +125,10 @@ class LanguageProfile(APIView):
             response = language_serializer.create(request)
             if response:
                 language_response = LanguagesSerializer(response)
-                return Response(language_response.data, status=status.HTTP_201_CREATED)
-            raise Http404
-        return Response(language_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Responses.make_response(data=language_response.data, status=status.HTTP_201_CREATED)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
+                            status=status.HTTP_400_BAD_REQUEST)
+        return Responses.make_response(error=True, message=language_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
         language_item = self.get_object(request, request.data.get('language_id'))
@@ -126,17 +137,18 @@ class LanguageProfile(APIView):
             language_response = language_serializer.update(language_item, request.data)
             if language_response:
                 response = LanguagesSerializer(language_response)
-                return Response(response.data)
-            raise Http404
-        return Response(language_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Responses.make_response(data=response.data)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
+                            status=status.HTTP_400_BAD_REQUEST)
+        return Responses.make_response(error=True, message=language_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
         try:
             language_item = self.get_object(request, request.data.get('language_id'))
             language_item.delete()
-            return Response({"delete": "done"}, status=status.HTTP_204_NO_CONTENT)
+            return Responses.make_response(data={"delete": "done"}, status=status.HTTP_204_NO_CONTENT)
         except:
-            return Response({"delete": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+            return Responses.make_response(error=True, message="Not Found", status=status.HTTP_404_NOT_FOUND)
 
 
 class ExperienceProfile(APIView):
@@ -150,9 +162,11 @@ class ExperienceProfile(APIView):
             experience_obj = ProfessionalExperience.objects.get(pk=pk)
             if experience_obj.profile == profile:
                 return experience_obj
-            raise Http404
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
+                            status=status.HTTP_400_BAD_REQUEST)
         except:
-            raise Http404
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
+                            status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
         try:
@@ -160,9 +174,10 @@ class ExperienceProfile(APIView):
             experience_serializer = ExperienceSerializer(ProfessionalExperience.objects.filter(profile=profile[0].id),
                                                          many=True)
         except:
-            return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
+                        status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(experience_serializer.data)
+        return Responses.make_response(data=experience_serializer.data)
 
     def post(self, request):
         experience_serializer = ExperienceSerializer(data=request.data)
@@ -170,9 +185,10 @@ class ExperienceProfile(APIView):
             response = experience_serializer.create(request)
             if response:
                 experience_response = ExperienceSerializer(response)
-                return Response(experience_response.data, status=status.HTTP_201_CREATED)
-            return Response({"error": "Server error"}, status=status.HTTP_400_BAD_REQUEST)
-        return Response(experience_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Responses.make_response(data=experience_response.data, status=status.HTTP_201_CREATED)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
+                        status=status.HTTP_400_BAD_REQUEST)
+        return Responses.make_response(error=True, message=experience_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
         experience_item = self.get_object(request, request.data.get('experience_id'))
@@ -181,17 +197,19 @@ class ExperienceProfile(APIView):
             experience_response = experience_serializer.update(experience_item, request.data)
             if experience_response:
                 response = ExperienceSerializer(experience_response)
-                return Response(response.data)
-            raise Http404
-        return Response(experience_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Responses.make_response(data=response.data)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
+                            status=status.HTTP_400_BAD_REQUEST)
+        return Responses.make_response(error=True, message=experience_serializer.errors, 
+                            status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
         try:
             experience_item = self.get_object(request, request.data.get('experience_id'))
             experience_item.delete()
-            return Response({"delete": "done"}, status=status.HTTP_204_NO_CONTENT)
+            return Responses.make_response(data={"delete": "done"}, status=status.HTTP_204_NO_CONTENT)
         except:
-            return Response({"delete": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(error=True, message="Not Found", status=status.HTTP_404_NOT_FOUND)
 
 
 
@@ -217,7 +235,7 @@ def job_status(request):
             return Responses.make_response(data=data)
         except:
             return Responses.make_response(data={}, error=True, 
-                    message="Server Error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    message=CONSTANTS.get('error_server'), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     elif request.method == "PUT":
         profile = Profile.objects.get(user=request.user.id)
@@ -284,7 +302,8 @@ def profile_form(request):
                     "address_line1": data.get("address_line1")
                 }
             except ObjectDoesNotExist:
-                return Responses.make_response(data={},error=True, message="Server error", status=status.HTTP_400_BAD_REQUEST)
+                return Responses.make_response(data={},error=True, message=CONSTANTS.get('error_server'), 
+                                    status=status.HTTP_400_BAD_REQUEST)
 
             address_item = profile.Address
             if address_item is None:
@@ -311,7 +330,8 @@ def profile_form(request):
                 if profile_response:
                     response = FisrtPageProfileSerializer(profile_response)
                     return Responses.make_response(data=response.data)
-                raise Http404
+                return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
+                            status=status.HTTP_400_BAD_REQUEST)
             return Responses.make_response(error=True, message= profile_serializer.errors, 
                                             status=status.HTTP_400_BAD_REQUEST)
     else:
