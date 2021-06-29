@@ -104,11 +104,9 @@ class LanguageProfile(APIView):
             language_obj = Languages.objects.get(pk=pk)
             if language_obj.profile == profile:
                 return language_obj
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                            status=status.HTTP_400_BAD_REQUEST)
+            raise Http404
         except:
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                            status=status.HTTP_400_BAD_REQUEST)
+            raise Http404
 
     def get(self, request):
         try:
@@ -162,11 +160,9 @@ class ExperienceProfile(APIView):
             experience_obj = ProfessionalExperience.objects.get(pk=pk)
             if experience_obj.profile == profile:
                 return experience_obj
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                            status=status.HTTP_400_BAD_REQUEST)
+            raise Http404
         except:
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                            status=status.HTTP_400_BAD_REQUEST)
+            raise Http404
 
     def get(self, request):
         try:
