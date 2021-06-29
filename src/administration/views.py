@@ -19,6 +19,7 @@ from djoser.conf import settings
 from djoser.views import UserViewSet
 from djoser import utils
 from djoser.serializers import TokenCreateSerializer
+from utils.constants import CONSTANTS
 
 
 
@@ -156,5 +157,5 @@ def candidates_view(request):
         return Responses.make_response(data=data)
     except ValueError:
         return Responses.make_response(error=True, 
-                                        message="Server error",
+                                        message=CONSTANTS.get('error_server'),
                                         status=status.HTTP_400_BAD_REQUEST)
