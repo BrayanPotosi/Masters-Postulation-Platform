@@ -5,14 +5,15 @@ from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.generics import ListAPIView, GenericAPIView
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, UpdateAPIView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 from profiles.models import Profile
-from .serializers import CandidatesListSerializer
+from .serializers import CandidatesListSerializer, CandidateDetailSerializer, AdminDetailSerializer, ScoreSerializer
 from profiles.serializers import UserSerializer
 from utils.responses import Responses
+from .models import Score
 
 from djoser.conf import settings
 from djoser.views import UserViewSet
@@ -23,6 +24,59 @@ from utils.constants import CONSTANTS
 
 
 User = get_user_model()
+
+"""Update the score of a candidate's profile"""
+class UpdateScore(UpdateAPIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    queryset = Score.objects.all()
+
+    serializer_class = ScoreSerializer
+
+    def put(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            profile_obj = Profile.objects.get(pk=request.data.get('profile_id'))
+            if instance.id == profile_obj.score.id:
+                serializer = self.get_serializer(instance, data=request.data, partial=True)
+                if serializer.is_valid():
+                    response = serializer.save()
+                    response = ScoreSerializer(response)
+                    return Responses.make_response(data=response.data)
+                    # return self.update(request, *args, **kwargs)
+            raise Exception
+        except:
+            return Responses.make_response(error=True, message="Server error", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+"""Get the Profile detail of an Candidate user"""
+class GetCandidateDetails(RetrieveUpdateAPIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    serializer_class = CandidateDetailSerializer
+    lookup_field = 'user'
+    queryset = Profile.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        obj = self.get_object()
+        serializer = CandidateDetailSerializer(obj)
+        return Responses.make_response(data=serializer.data)
+        
+
+"""Get the User detail of an Admin user"""
+class GetAdminDetails(RetrieveUpdateAPIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    serializer_class = AdminDetailSerializer
+    queryset = User.objects.filter(is_staff=True)
+
+    def get(self, request, *args, **kwargs):
+        obj = self.get_object()
+        serializer = AdminDetailSerializer(obj)
+        return Responses.make_response(data=serializer.data)
+
 
 """Signup and login override Djoser methods
 """
@@ -47,7 +101,7 @@ class SignUp(UserViewSet):
         )
 
 
-class administrators_view(ListAPIView):
+class AdministratorsView(ListAPIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
 
