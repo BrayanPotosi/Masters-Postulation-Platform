@@ -21,3 +21,26 @@ class CandidateLog(models.Model):
 
     def __str__(self):
         return f'{self.candidate}, {self.device}'
+
+class HasJobWeight(models.Model):
+    has_job = models.BooleanField(default=False)
+    weight = models.PositiveIntegerField(default=0)
+
+    def __str__(self) -> str:
+        return f'{self.has_job}-{self.weight}'
+
+class AgeWeight(models.Model):
+    age_years_start = models.PositiveIntegerField(default=0)
+    age_years_end = models.PositiveIntegerField(default=0)
+    weight = models.PositiveIntegerField(default=0)
+
+    def __str__(self) -> str:
+        return f'{self.age_years_start} to {self.age_years_end}-{self.weight}'
+
+class ExperinceWeight(models.Model):
+    exp_months_start = models.PositiveIntegerField(default=0)
+    exp_months_end = models.PositiveIntegerField(default=0)
+    weight = models.PositiveIntegerField(default=0)
+
+    def __str__(self) -> str:
+        return f'{self.exp_months_start} to {self.exp_months_end}-{self.weight}'
