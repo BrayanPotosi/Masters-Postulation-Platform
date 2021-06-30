@@ -11,7 +11,7 @@ from .models import (CivilStatus, Countries,
                         JobStatus, Cities, 
                         ProfessionalExperience, Languages,
                         LastGrade, GottenGrade,
-                        CambridgeLevel,
+                        CambridgeLevel,Gender
                     )
 
 
@@ -19,6 +19,11 @@ class CambridgeLevelSerializer(serializers.ModelSerializer):
     class Meta:
         model = CambridgeLevel
         fields = ('level','id',)
+
+class GenderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Gender
+        fields = '__all__'
 
 class CountriesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -160,7 +165,6 @@ class AddressSerializer(serializers.ModelSerializer):
 
         def update(self, instance, data):
             try:
-                print(instance)
                 instance.country = data.get('country')
                 instance.save()
                 return instance
@@ -196,6 +200,7 @@ class FisrtPageProfileSerializer(serializers.ModelSerializer):
             'Address',
             'home_phone',
             'mobile_phone',
+            'gender',
         )
 
 class SecondPageProfileSerializer(serializers.ModelSerializer):
