@@ -95,19 +95,31 @@ class Address(models.Model):
     def __str__(self):
         return f'{self.postal_code}, {self.city}, {self.country}'
 
+class Gender(models.Model):
+    gender = models.CharField(max_length=100, null=True)
+
+    def __str__(self) -> str:
+        return f'{self.gender}'
+
+class ProcessStatus(models.Model):
+    process_name = models.CharField(max_length=100, null=True)
+
+    def __str__(self) -> str:
+        return f'{self.process_name}'
 
 class Profile(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     birthday = models.DateField(blank=True, null=True)
     score = models.ForeignKey(Score, null=True, blank=True ,on_delete=models.SET_NULL)
     total_score = models.PositiveIntegerField(blank=True, null=True, default=0)
+    gender = models.ForeignKey(Gender, null=True, blank=True, on_delete=models.SET_NULL)
     civil_status = models.ForeignKey(CivilStatus, null=True, blank=True, on_delete=models.SET_NULL)
     Address = models.ForeignKey(Address, null=True, blank=True, on_delete=models.SET_NULL)
     home_phone = models.CharField(max_length=15, blank=True, null=True)
     work_phone = models.CharField(max_length=15, blank=True, null=True)
     mobile_phone = models.CharField(max_length=15, blank=True, null=True)
     is_reviewed = models.BooleanField(default=False)
-    process_status = models.SmallIntegerField(blank=True, null=True)
+    process_status = models.ForeignKey(ProcessStatus, null=True, blank=True, on_delete=models.SET_NULL)
     job_status = models.OneToOneField(JobStatus, null=True, blank=True, on_delete=models.SET_NULL)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
@@ -118,9 +130,10 @@ class Profile(models.Model):
 
 class LastGrade(models.Model):
     name = models.CharField(max_length=100)
+    weight = models.PositiveIntegerField(default=0)
 
     def __str__(self) -> str:
-        return f'{self.name}'
+        return f'{self.name}-{self.weight}'
 
 
 class GottenGrade(models.Model):
@@ -158,9 +171,10 @@ class ProfessionalExperience(models.Model):
 
 class CambridgeLevel(models.Model):
     level = models.CharField(max_length=6)
+    weight = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return f'{self.level}'
+        return f'{self.level}-{self.weight}'
 
 
 class Languages(models.Model):
