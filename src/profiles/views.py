@@ -21,7 +21,7 @@ from .serializers import (
                             GottenGradeSerializer, LastGradeSerializer,
                             CivilStatusSerializer, CambridgeLevel,
                             ProfileSerializer, UserSerializer,
-                            JobStatusSerializer,
+                            JobStatusSerializer, GenderSerializer
                         )
 # Models
 from .models import (
@@ -29,7 +29,7 @@ from .models import (
                         Countries, Education, 
                         GottenGrade, LastGrade, 
                         Profile, ProfessionalExperience, 
-                        Languages, JobStatus,
+                        Languages, JobStatus, Gender,
                     )
 
 
@@ -260,9 +260,11 @@ def profile_form(request):
 
         countries_serializer = CountriesSerializer(Countries.objects.all(), many=True)
         civil_status_serializer = CivilStatusSerializer(CivilStatus.objects.all(), many=True)
+        gender_serializer = GenderSerializer(Gender.objects.all(), many=True)
         options = {
             "countries": countries_serializer.data,
             "civil_status": civil_status_serializer.data,
+            "gender": gender_serializer.data,
         }
         profile = Profile.objects.filter(user=request.user.id)
         serializer = FisrtPageProfileSerializer(profile, many=True)
@@ -290,7 +292,8 @@ def profile_form(request):
                     "birthday": data.get("birthday"),
                     "civil_status": CivilStatus.objects.get(pk= data.get("c_status")),
                     "home_phone": data.get("home_phone"),
-                    "mobile_phone": data.get("mobile_phone")
+                    "mobile_phone": data.get("mobile_phone"),
+                    "gender": Gender.objects.get(pk=data.get("gender")),
                 }
                 address_data = {
                     "country":Countries.objects.get(pk=data.get("country")),

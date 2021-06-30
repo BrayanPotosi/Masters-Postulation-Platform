@@ -8,16 +8,18 @@ from .models import (
     LastGrade, GottenGrade,
     Education, ProfessionalExperience,
     CambridgeLevel, Languages,
-    User,
+    User, Gender
 )
 
-@admin.register(User)
-class AuthorAdmin(admin.ModelAdmin):
-    fields= ('email', 'password','is_staff','first_name', 'last_name',)
+# @admin.register(User)
+# class AuthorAdmin(admin.ModelAdmin):
+#     fields= ('email', 'password','is_staff','first_name', 'last_name', 'is_active', 'is_superuser')
+#     pass
 
 
 
 # admin.site.register(User, UserAdmin) 
+admin.site.register(User, UserAdmin)
 admin.site.register(CivilStatus)
 admin.site.register(JobStatus)
 admin.site.register(Countries)
@@ -30,3 +32,4 @@ admin.site.register(GottenGrade)
 admin.site.register(ProfessionalExperience)
 admin.site.register(CambridgeLevel)
 admin.site.register(Languages)
+admin.site.register(Gender)

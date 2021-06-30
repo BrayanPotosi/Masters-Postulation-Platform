@@ -18,7 +18,7 @@ User = get_user_model()
 @receiver(post_save, sender=User)
 def post_save_create_profile(sender, instance, created, **kwargs):
     if created:
-        if instance.is_staff == False:
+        if instance.is_staff == False and instance.email:
             Profile.objects.create(user=instance)
 
 @receiver(post_save, sender=Profile)
