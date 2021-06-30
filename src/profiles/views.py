@@ -21,7 +21,7 @@ from .serializers import (
                             GottenGradeSerializer, LastGradeSerializer,
                             CivilStatusSerializer, CambridgeLevel,
                             ProfileSerializer, UserSerializer,
-                            JobStatusSerializer,
+                            JobStatusSerializer, CitiesFkSerializer
                         )
 # Models
 from .models import (
@@ -196,7 +196,7 @@ class ExperienceProfile(APIView):
                 return Responses.make_response(data=response.data)
             return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
                             status=status.HTTP_400_BAD_REQUEST)
-        return Responses.make_response(error=True, message=experience_serializer.errors, 
+        return Responses.make_response(error=True, message=experience_serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
@@ -205,7 +205,7 @@ class ExperienceProfile(APIView):
             experience_item.delete()
             return Responses.make_response(data={"delete": "done"}, status=status.HTTP_204_NO_CONTENT)
         except:
-            return Response(error=True, message="Not Found", status=status.HTTP_404_NOT_FOUND)
+            return Responses.make_response(error=True, message="Not Found", status=status.HTTP_404_NOT_FOUND)
 
 
 
@@ -334,4 +334,16 @@ def profile_form(request):
         return Responses.make_response(error=True, message="method not allowed",
                                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-            
+
+@api_view(['GET'])
+@authentication_classes([authentication.TokenAuthentication])
+@permission_classes([permissions.IsAuthenticated])
+def profile_cities(request):
+    country = request.query_params.get('country')
+    try:
+        cities = Cities.objects.filter(country_id=country)
+        cities_serializer = CitiesFkSerializer(cities, many=True)
+        return Responses.make_response(cities_serializer.data)
+    except:
+        return Responses.make_response(error=True, message=CONSTANTS.get('error_server'),
+                                       status=status.HTTP_500_INTERNAL_SERVER_ERROR)

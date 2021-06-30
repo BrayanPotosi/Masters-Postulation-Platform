@@ -30,6 +30,11 @@ class CitiesSerializer(serializers.ModelSerializer):
         model = Cities
         fields = ('city_name','id',)
 
+class CitiesFkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cities
+        fields = '__all__'
+
 class LastGradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = LastGrade
