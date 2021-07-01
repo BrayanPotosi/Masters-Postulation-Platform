@@ -195,7 +195,7 @@ def candidates_view(request):
                 "admin": admin_list_df,
                 "count":count_users_df,
             }
-            return Dataframe2Excel.df2xlsx(data=data, name='Candidate_report')
+            return Dataframe2Excel.df2xlsx(data=data, name='Report_Up_Program')
             # profile_list_df.to_excel("output.xlsx")
 
 
