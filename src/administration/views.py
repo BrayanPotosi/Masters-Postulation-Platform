@@ -1,5 +1,4 @@
 import math
-import io
 import pandas as pd 
 
 from django.http import HttpResponse
@@ -20,10 +19,6 @@ from profiles.serializers import UserSerializer
 from utils.responses import Responses
 from .models import Score
 
-from djoser.conf import settings
-from djoser.views import UserViewSet
-from djoser import utils
-from djoser.serializers import TokenCreateSerializer
 from utils.constants import CONSTANTS
 from utils.dataframe_to_excel import Dataframe2Excel
 
@@ -82,29 +77,6 @@ class GetAdminDetails(RetrieveUpdateAPIView):
         obj = self.get_object()
         serializer = AdminDetailSerializer(obj)
         return Responses.make_response(data=serializer.data)
-
-
-"""Signup and login override Djoser methods
-"""
-class SignUp(UserViewSet):
- 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        # Login userd just created
-        # _ = request.data.pop('re_password')
-        serializer_token = TokenCreateSerializer(data=request.data)
-        serializer_token.is_valid(raise_exception=True)
-        token = utils.login_user(self.request, serializer_token.user)
-        token_serializer_class = settings.SERIALIZERS.token
-        data = {
-            "signup": serializer.data,
-            "login": token_serializer_class(token).data
-        }
-        return Responses.make_response(
-            data=data, status=status.HTTP_200_OK
-        )
 
 
 class AdministratorsView(ListAPIView):
