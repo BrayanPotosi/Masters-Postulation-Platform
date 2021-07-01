@@ -93,7 +93,7 @@ class Address(models.Model):
     country = models.ForeignKey(Countries, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        return f'{self.postal_code}, {self.city}, {self.country}'
+        return f'{self.city}-{self.country}'
 
 class Gender(models.Model):
     gender = models.CharField(max_length=100, null=True)

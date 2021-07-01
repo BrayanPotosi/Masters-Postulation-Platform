@@ -1,12 +1,17 @@
 import math
+import io
+import pandas as pd 
+
+from django.http import HttpResponse
+from django.contrib.auth import get_user_model
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework import serializers, status, authentication, permissions
 from rest_framework.views import APIView
-from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, UpdateAPIView
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 from profiles.models import Profile
@@ -138,6 +143,37 @@ def candidates_view(request):
 
         profile_list = Profile.objects.order_by(order)
         total_candidates = profile_list.count()
+
+        #-----------------------
+        data = {
+            'username':[],
+            'email':[],
+            'Name':[],
+            'Location':[],
+            'score':[],
+        }
+        for candidate in profile_list:
+            data['username'].append(candidate.user.username)
+            data['email'].append(candidate.user.email)
+            data['Name'].append(candidate.user.first_name)
+            data['Location'].append(candidate.Address)
+            data['score'].append(candidate.score)
+
+        # profile_list_df = pd.DataFrame(profile_list.values())
+        profile_list_df = pd.DataFrame.from_dict(data)
+
+        output = io.BytesIO()
+        writer = pd.ExcelWriter(output, engine='xlsxwriter')
+        profile_list_df.to_excel(writer, sheet_name='Sheet1')
+        writer.save()
+        xlsx_data = output.getvalue()
+
+
+        print(profile_list_df)
+        profile_list_df.to_excel("output.xlsx")
+        #-----------------------
+
+
         paginator = Paginator(profile_list,items_per_page)
         try:
             profile_list = paginator.page(page_num)
