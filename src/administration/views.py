@@ -25,6 +25,7 @@ from djoser.views import UserViewSet
 from djoser import utils
 from djoser.serializers import TokenCreateSerializer
 from utils.constants import CONSTANTS
+from utils.dataframe_to_excel import Dataframe2Excel
 
 
 
@@ -132,10 +133,11 @@ def candidates_view(request):
     page_num = request.query_params.get('page')    
     items_pp_query = request.query_params.get('ippage')
     sort_option = request.query_params.get('sort')
+    export_excel = request.query_params.get('2xlsx')
+
     order = 'total_score'
     if sort_option == 'desc':
         order = '-total_score'
-
         
     try:
         if items_pp_query is not None:
@@ -145,34 +147,29 @@ def candidates_view(request):
         total_candidates = profile_list.count()
 
         #-----------------------
-        data = {
-            'username':[],
-            'email':[],
-            'Name':[],
-            'Location':[],
-            'score':[],
-        }
-        for candidate in profile_list:
-            data['username'].append(candidate.user.username)
-            data['email'].append(candidate.user.email)
-            data['Name'].append(candidate.user.first_name)
-            data['Location'].append(candidate.Address)
-            data['score'].append(candidate.score)
+        if export_excel=='1':
 
-        # profile_list_df = pd.DataFrame(profile_list.values())
-        profile_list_df = pd.DataFrame.from_dict(data)
+            data = {
+                'username':[],
+                'email':[],
+                'Name':[],
+                'Location':[],
+                'score':[],
+                'total_score': []
+            }
+            for candidate in profile_list:
+                data['username'].append(candidate.user.username)
+                data['email'].append(candidate.user.email)
+                data['Name'].append(candidate.user.first_name)
+                data['Location'].append(candidate.Address)
+                data['score'].append(candidate.score)
+                data['total_score'].append(candidate.total_score)
 
-        output = io.BytesIO()
-        writer = pd.ExcelWriter(output, engine='xlsxwriter')
-        profile_list_df.to_excel(writer, sheet_name='Sheet1')
-        writer.save()
-        xlsx_data = output.getvalue()
-
-        print(xlsx_data)
-
-        # profile_list_df.to_excel("output.xlsx")
+            # profile_list_df = pd.DataFrame(profile_list.values())
+            profile_list_df = pd.DataFrame.from_dict(data)
+            return Dataframe2Excel.df2xlsx(df=profile_list_df, name='Candidate_report')
+            # profile_list_df.to_excel("output.xlsx")
         #-----------------------
-
 
         paginator = Paginator(profile_list,items_per_page)
         try:
