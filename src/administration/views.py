@@ -1,12 +1,17 @@
 import math
+import io
+import pandas as pd 
+
+from django.http import HttpResponse
+from django.contrib.auth import get_user_model
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework import serializers, status, authentication, permissions
 from rest_framework.views import APIView
-from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView, UpdateAPIView
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 from profiles.models import Profile
@@ -20,6 +25,7 @@ from djoser.views import UserViewSet
 from djoser import utils
 from djoser.serializers import TokenCreateSerializer
 from utils.constants import CONSTANTS
+from utils.dataframe_to_excel import Dataframe2Excel
 
 
 
@@ -127,10 +133,11 @@ def candidates_view(request):
     page_num = request.query_params.get('page')    
     items_pp_query = request.query_params.get('ippage')
     sort_option = request.query_params.get('sort')
+    export_excel = request.query_params.get('2xlsx')
+
     order = 'total_score'
     if sort_option == 'desc':
         order = '-total_score'
-
         
     try:
         if items_pp_query is not None:
@@ -138,6 +145,60 @@ def candidates_view(request):
 
         profile_list = Profile.objects.order_by(order)
         total_candidates = profile_list.count()
+
+        """Getting ready the data to export to excel format, only if 
+            param '2xlsx' is equal to '1'. """
+        if export_excel=='1':
+
+            admin_list = User.objects.filter(is_staff=True)
+            admin_count = admin_list.count()
+            candidate_count = total_candidates
+
+            users_count = {
+                'User type': ['Admin', 'Candidate'],
+                'Count':[admin_count, candidate_count]
+            }
+
+            candidate_obj = {
+                'username':[],
+                'email':[],
+                'Name':[],
+                'Location':[],
+                'score':[],
+                'total_score': []
+            }
+            for candidate in profile_list:
+                candidate_obj['username'].append(candidate.user.username)
+                candidate_obj['email'].append(candidate.user.email)
+                candidate_obj['Name'].append(candidate.user.first_name)
+                candidate_obj['Location'].append(candidate.Address)
+                candidate_obj['score'].append(candidate.score)
+                candidate_obj['total_score'].append(candidate.total_score)
+
+            admin_obj = {
+                'email':[],
+                'First_name': [],
+                'Last_name':[]
+            }
+            for admin  in admin_list:
+                admin_obj['email'].append(admin.email)
+                admin_obj['First_name'].append(admin.first_name)
+                admin_obj['Last_name'].append(admin.last_name)
+
+            # profile_list_df = pd.DataFrame(profile_list.values())
+            profile_list_df = pd.DataFrame.from_dict(candidate_obj)
+            admin_list_df = pd.DataFrame.from_dict(admin_obj)
+            count_users_df = pd.DataFrame.from_dict(users_count)
+
+            data = {
+                "candidate":profile_list_df,
+                "admin": admin_list_df,
+                "count":count_users_df,
+            }
+            return Dataframe2Excel.df2xlsx(data=data, name='Report_Up_Program')
+            # profile_list_df.to_excel("output.xlsx")
+
+
         paginator = Paginator(profile_list,items_per_page)
         try:
             profile_list = paginator.page(page_num)

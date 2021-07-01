@@ -8,7 +8,7 @@ from .models import (
     LastGrade, GottenGrade,
     Education, ProfessionalExperience,
     CambridgeLevel, Languages,
-    User, Gender
+    User, Gender, ProcessStatus,
 )
 
 # @admin.register(User)
@@ -33,3 +33,4 @@ admin.site.register(ProfessionalExperience)
 admin.site.register(CambridgeLevel)
 admin.site.register(Languages)
 admin.site.register(Gender)
+admin.site.register(ProcessStatus)
