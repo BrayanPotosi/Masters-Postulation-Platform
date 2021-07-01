@@ -168,9 +168,9 @@ def candidates_view(request):
         writer.save()
         xlsx_data = output.getvalue()
 
+        print(xlsx_data)
 
-        print(profile_list_df)
-        profile_list_df.to_excel("output.xlsx")
+        # profile_list_df.to_excel("output.xlsx")
         #-----------------------
 
 
