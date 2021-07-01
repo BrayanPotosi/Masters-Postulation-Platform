@@ -146,10 +146,20 @@ def candidates_view(request):
         profile_list = Profile.objects.order_by(order)
         total_candidates = profile_list.count()
 
-        #-----------------------
+        """Getting ready the data to export to excel format, only if 
+            param '2xlsx' is equal to '1'. """
         if export_excel=='1':
 
-            data = {
+            admin_list = User.objects.filter(is_staff=True)
+            admin_count = admin_list.count()
+            candidate_count = total_candidates
+
+            users_count = {
+                'User type': ['Admin', 'Candidate'],
+                'Count':[admin_count, candidate_count]
+            }
+
+            candidate_obj = {
                 'username':[],
                 'email':[],
                 'Name':[],
@@ -158,18 +168,36 @@ def candidates_view(request):
                 'total_score': []
             }
             for candidate in profile_list:
-                data['username'].append(candidate.user.username)
-                data['email'].append(candidate.user.email)
-                data['Name'].append(candidate.user.first_name)
-                data['Location'].append(candidate.Address)
-                data['score'].append(candidate.score)
-                data['total_score'].append(candidate.total_score)
+                candidate_obj['username'].append(candidate.user.username)
+                candidate_obj['email'].append(candidate.user.email)
+                candidate_obj['Name'].append(candidate.user.first_name)
+                candidate_obj['Location'].append(candidate.Address)
+                candidate_obj['score'].append(candidate.score)
+                candidate_obj['total_score'].append(candidate.total_score)
+
+            admin_obj = {
+                'email':[],
+                'First_name': [],
+                'Last_name':[]
+            }
+            for admin  in admin_list:
+                admin_obj['email'].append(admin.email)
+                admin_obj['First_name'].append(admin.first_name)
+                admin_obj['Last_name'].append(admin.last_name)
 
             # profile_list_df = pd.DataFrame(profile_list.values())
-            profile_list_df = pd.DataFrame.from_dict(data)
-            return Dataframe2Excel.df2xlsx(df=profile_list_df, name='Candidate_report')
+            profile_list_df = pd.DataFrame.from_dict(candidate_obj)
+            admin_list_df = pd.DataFrame.from_dict(admin_obj)
+            count_users_df = pd.DataFrame.from_dict(users_count)
+
+            data = {
+                "candidate":profile_list_df,
+                "admin": admin_list_df,
+                "count":count_users_df,
+            }
+            return Dataframe2Excel.df2xlsx(data=data, name='Candidate_report')
             # profile_list_df.to_excel("output.xlsx")
-        #-----------------------
+
 
         paginator = Paginator(profile_list,items_per_page)
         try:
