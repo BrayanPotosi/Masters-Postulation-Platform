@@ -120,6 +120,8 @@ REST_FRAMEWORK = {
         # 'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
+    'EXCEPTION_HANDLER': 'utils.exceptions.custom_exception_handler'
+
 }
 
 # Default primary key field type
