@@ -128,14 +128,14 @@ def candidates_view(request):
 
         profile_list = Profile.objects.order_by(order)
         total_candidates = profile_list.count()
+        admin_list = User.objects.filter(is_staff=True)
+        admin_count = admin_list.count()
+        candidate_count = total_candidates
+        total_users = total_candidates + admin_count
 
         """Getting ready the data to export to excel format, only if 
             param '2xlsx' is equal to '1'. """
         if export_excel=='1':
-
-            admin_list = User.objects.filter(is_staff=True)
-            admin_count = admin_list.count()
-            candidate_count = total_candidates
 
             users_count = {
                 'User type': ['Admin', 'Candidate'],
@@ -186,12 +186,6 @@ def candidates_view(request):
             current_date = datetime.date.today().strftime('%d/%m/%Y')
             order = request.query_params.get('order')
 
-            candidates = User.objects.filter(is_superuser=False)
-            administrators = User.objects.filter(is_superuser=True)
-            total_candidates = len(candidates)
-            total_administrators = len(administrators)
-            total_users = total_candidates + total_administrators
-
             buffer = BytesIO()
 
             # Create the PDF object, using the buffer as its "file."
@@ -207,14 +201,18 @@ def candidates_view(request):
             p.setFont('Helvetica', 12)
             p.drawString(30, 735, 'Report')
 
+            high = 550
+
+            p.setFont('Helvetica', 12)
+            p.drawString(30, 685, f'Numero total de candidatos : {total_candidates}')
+            p.drawString(30, 670, f'Numero total de administradores : {admin_count}')
+            p.drawString(30, 655, f'Numero total de usuarios : {total_users}')
+            p.setFont('Helvetica-Bold', 12)
+            p.drawString(240, 600, f'Lista de postulantes ')
+
             p.setFont('Helvetica-Bold', 12)
             p.drawString(480, 750, current_date)
             p.line(460, 747, 560, 747)
-
-            # Candidates_table
-            candidates_table = [
-                {"Id": '1', 'first_name': 'Nombre', 'last_name': 'Apellido'}
-            ]
 
             # Table header
             styles = getSampleStyleSheet()
@@ -222,35 +220,70 @@ def candidates_view(request):
             styleBH.alignment = TA_CENTER
             styleBH.fontSize = 10
 
-            number = Paragraph('''Id''', styleBH)
-            first_name = Paragraph('''Nombre''', styleBH)
-            last_name = Paragraph('''Apellido''', styleBH)
+            id = Paragraph('''Id''', styleBH)
+            username = Paragraph('''Username''', styleBH)
+            email = Paragraph('''Email''', styleBH)
+            Name = Paragraph('''Name''', styleBH)
+            Location = Paragraph('''Location''', styleBH)
+            total_score = Paragraph('''Total Score''', styleBH)
 
-            data = []
-            data.append([number, first_name, last_name])
+            data_user = [[id, username, email, Name, Location, total_score]]
 
             # table
             styleN = styles['BodyText']
             styleN.alignment = TA_CENTER
             styleN.fontSize = 7
 
-            high = 650
+            for candidate in profile_list:
+                this_candidate = [candidate.user.id,
+                                  candidate.user.username,
+                                  candidate.user.email,
+                                  candidate.user.first_name,
+                                  candidate.Address,
+                                  candidate.total_score
+                                  ]
+                data_user.append(this_candidate)
+                high -= 18
 
-            for candidate in candidates:
-                print('///////////////////////////////////////////////////////////', candidate)
-                this_candidate = [candidate['id'], candidate['first_name'], candidate['last_name']]
-                data.append(this_candidate)
-                high = high - 18
+            email = Paragraph('''Email''', styleBH)
+            First_name = Paragraph('''First Name''', styleBH)
+            Last_name = Paragraph('''Last Name''', styleBH)
+
+            data_admin = [[email, First_name, Last_name]]
+
+            high2 = high - 100
+
+            p.setFont('Helvetica-Bold', 12)
+            p.drawString(230, high2 + 45, f'Lista de administradores ')
+
+            for admin in admin_list:
+                this_admin = [admin.email,
+                              admin.first_name,
+                              admin.last_name
+                              ]
+                data_admin.append(this_admin)
+                high2 -= 18
 
             # table size
+
             width, height = A4
-            table = Table(data, colWidths=[1.9 * cm, 9.5 * cm, 1.9 * cm, 1.9 * cm, 1.9 * cm, 1.9 * cm])
+            table = Table(data_user, colWidths=[1.0 * cm, 2.3 * cm, 4.0 * cm, 4.0 * cm, 5.0 * cm, 2.3 * cm])
             table.setStyle(TableStyle([
                 ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
                 ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
             ]))
 
+            width, height = A4
+            table2 = Table(data_admin, colWidths=[6.2 * cm, 6.2 * cm, 6.2 * cm])
+            table2.setStyle(TableStyle([
+                ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
+                ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
+            ]))
+
             # pdf size
+
+            table2.wrapOn(p, width, height)
+            table2.drawOn(p, 30, high2)
 
             table.wrapOn(p, width, height)
             table.drawOn(p, 30, high)
