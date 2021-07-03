@@ -28,9 +28,9 @@ from io import BytesIO
 from django.http import FileResponse
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.units import cm
+from reportlab.lib.units import cm, inch
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import Paragraph, Table, TableStyle, Image
+from reportlab.platypus import Paragraph, Table, TableStyle, Image, BaseDocTemplate
 from reportlab.lib.enums import TA_CENTER
 from reportlab.lib import colors
 
@@ -105,6 +105,37 @@ class AdministratorsView(ListAPIView):
                 "data": serializer.data
                 }
         return Responses.make_response(data=data)
+
+
+class MyDocTemplate(BaseDocTemplate):
+    """Override the BaseDocTemplate class to do custom handle_XXX actions"""
+
+    def __init__(self, *args, **kwargs):
+        BaseDocTemplate.__init__(self, *args, **kwargs)
+
+    def afterPage(self):
+        """Called after each page has been processed"""
+
+        # saveState keeps a snapshot of the canvas state, so you don't
+        # mess up any rendering that platypus will do later.
+        self.canv.saveState()
+
+        # Reset the origin to (0, 0), remember, we can restore the
+        # state of the canvas later, so platypus should be unaffected.
+        self.canv._x = 0
+        self.canv._y = 0
+
+        style = getSampleStyleSheet()
+
+        p = Paragraph("This is drawn after the page!", style["Normal"])
+
+        # Wraps and draws the paragraph onto the canvas
+        # You can change the last 2 parameters (canv, x, y)
+        p.wrapOn(self.canv, 2*inch, 2*inch)
+        p.drawOn(self.canv, 1*inch, 3*inch)
+
+        # Now we restore the canvas back to the way it was.
+        self.canv.restoreState()
 
 
 @api_view(['GET'])
@@ -184,15 +215,12 @@ def candidates_view(request):
         elif export_excel == '2':
 
             current_date = datetime.date.today().strftime('%d/%m/%Y')
-            order = request.query_params.get('order')
-
             buffer = BytesIO()
 
             # Create the PDF object, using the buffer as its "file."
             p = canvas.Canvas(buffer, pagesize=A4)
 
             # Draw things on the PDF. Here's where the PDF generation happens.
-            # See the ReportLab documentation for the full list of functionality.
 
             p.setLineWidth(.2)
             p.setFont('Helvetica', 22)
@@ -267,7 +295,7 @@ def candidates_view(request):
             # table size
 
             width, height = A4
-            table = Table(data_user, colWidths=[1.0 * cm, 2.3 * cm, 4.0 * cm, 4.0 * cm, 5.0 * cm, 2.3 * cm])
+            table = Table(data_user, colWidths=[1.0 * cm, 3.3 * cm, 4.0 * cm, 3.0 * cm, 5.0 * cm, 2.3 * cm])
             table.setStyle(TableStyle([
                 ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
                 ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
@@ -295,6 +323,7 @@ def candidates_view(request):
             # FileResponse sets the Content-Disposition header so that browsers
             # present the option to save the file.
             buffer.seek(0)
+
             return FileResponse(buffer, as_attachment=True, filename='Report_Up_Program.pdf')
 
         paginator = Paginator(profile_list,items_per_page)

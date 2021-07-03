@@ -316,7 +316,6 @@ def profile_form(request):
                 return Responses.make_response(error=True, message=address_serializer.errors, 
                                             status=status.HTTP_400_BAD_REQUEST)
 
-
             user_serializer = UserSerializer(user, data=user_data)
             if user_serializer.is_valid():
                 user_serializer.save()
