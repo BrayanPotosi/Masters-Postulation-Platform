@@ -1,6 +1,8 @@
+# Django
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
+# Moodels
 from .models import (
     CivilStatus, JobStatus,
     Countries, Cities,
@@ -15,8 +17,6 @@ from .models import (
 # class AuthorAdmin(admin.ModelAdmin):
 #     fields= ('email', 'password','is_staff','first_name', 'last_name', 'is_active', 'is_superuser')
 #     pass
-
-
 
 # admin.site.register(User, UserAdmin) 
 admin.site.register(User, UserAdmin)
