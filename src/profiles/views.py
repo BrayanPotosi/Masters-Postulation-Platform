@@ -1,44 +1,50 @@
-from copy import error
+# Rest Framework
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.response import Response
 from rest_framework import serializers, status, authentication, permissions
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 # Django
-from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
+
+# Copy
+from copy import error
+
 # Custom classes
 from utils.responses import Responses
 from utils.constants import CONSTANTS
 
 # Serializers
-from .serializers import ( 
-                            AddressSerializer, CambridgeLevelSerializer, ExperienceSerializer, 
-                            FisrtPageProfileSerializer, SecondPageProfileSerializer, 
-                            EducationSerializer, LanguagesSerializer,
-                            CitiesSerializer, CountriesSerializer,
-                            GottenGradeSerializer, LastGradeSerializer,
-                            CivilStatusSerializer, CambridgeLevel,
-                            ProfileSerializer, UserSerializer,
-                            JobStatusSerializer, CitiesFkSerializer,
-                            GenderSerializer
-                        )
+from .serializers import (
+    AddressSerializer, CambridgeLevelSerializer, ExperienceSerializer,
+    FisrtPageProfileSerializer, SecondPageProfileSerializer,
+    EducationSerializer, LanguagesSerializer,
+    CitiesSerializer, CountriesSerializer,
+    GottenGradeSerializer, LastGradeSerializer,
+    CivilStatusSerializer, CambridgeLevel,
+    ProfileSerializer, UserSerializer,
+    JobStatusSerializer, CitiesFkSerializer,
+    GenderSerializer
+)
 # Models
 from .models import (
-                        Address, Cities, CivilStatus, 
-                        Countries, Education, 
-                        GottenGrade, LastGrade, 
-                        Profile, ProfessionalExperience, 
-                        Languages, JobStatus, Gender,
-                    )
-
+    Address, Cities, CivilStatus,
+    Countries, Education,
+    GottenGrade, LastGrade,
+    Profile, ProfessionalExperience,
+    Languages, JobStatus, Gender,
+)
 
 """Endpoint education [POST, GET]:
    GET: Give a response with all education that match with an user-profile
    POST: Create a new row with education into user-profile
         Response: The Education info that was created"""
-class education_profile(APIView):
+
+
+class EducationProfile(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -53,29 +59,29 @@ class education_profile(APIView):
             raise Http404
         except:
             raise Http404
-    
 
     def get(self, request):
         try:
             profile = Profile.objects.get(user=request.user.id)
             education_serializer = EducationSerializer(Education.objects.filter(profile=profile.id), many=True)
         except:
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'),
+                                           status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Responses.make_response(data=education_serializer.data)
-    
+
     def post(self, request):
         education_serializer = EducationSerializer(data=request.data)
         if education_serializer.is_valid():
             response = education_serializer.create(request)
-            if response :
+            if response:
                 education_response = EducationSerializer(response)
                 return Responses.make_response(data=education_response.data, status=status.HTTP_201_CREATED)
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Responses.make_response(error=True, message=education_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'),
+                                           status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Responses.make_response(error=True, message=education_serializer.errors,
+                                       status=status.HTTP_400_BAD_REQUEST)
+
     def put(self, request):
         education_item = self.get_object(request, request.data.get('education_id'))
         education_serializer = EducationSerializer(education_item, data=request.data)
@@ -84,15 +90,15 @@ class education_profile(APIView):
             if education_response:
                 response = EducationSerializer(education_response)
                 return Responses.make_response(data=response.data)
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Responses.make_response(error=True, message=education_serializer.errors, 
-                                        status=status.HTTP_400_BAD_REQUEST)
-    
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'),
+                                           status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Responses.make_response(error=True, message=education_serializer.errors,
+                                       status=status.HTTP_400_BAD_REQUEST)
+
     def delete(self, request):
         education_item = self.get_object(request, request.data.get('education_id'))
         education_item.delete()
-        return Responses.make_response(data={"delete":"done"}, status=status.HTTP_204_NO_CONTENT)
+        return Responses.make_response(data={"delete": "done"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class LanguageProfile(APIView):
@@ -114,7 +120,8 @@ class LanguageProfile(APIView):
             profile = Profile.objects.filter(user=request.user.id)
             language_serializer = LanguagesSerializer(Languages.objects.filter(profile=profile[0].id), many=True)
         except:
-            return Responses.make_response(error=True,message=CONSTANTS.get('error_server') , status=status.HTTP_400_BAD_REQUEST)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'),
+                                           status=status.HTTP_400_BAD_REQUEST)
 
         return Responses.make_response(data=language_serializer.data)
 
@@ -125,9 +132,10 @@ class LanguageProfile(APIView):
             if response:
                 language_response = LanguagesSerializer(response)
                 return Responses.make_response(data=language_response.data, status=status.HTTP_201_CREATED)
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                            status=status.HTTP_400_BAD_REQUEST)
-        return Responses.make_response(error=True, message=language_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'),
+                                           status=status.HTTP_400_BAD_REQUEST)
+        return Responses.make_response(error=True, message=language_serializer.errors,
+                                       status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
         language_item = self.get_object(request, request.data.get('language_id'))
@@ -137,9 +145,10 @@ class LanguageProfile(APIView):
             if language_response:
                 response = LanguagesSerializer(language_response)
                 return Responses.make_response(data=response.data)
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                            status=status.HTTP_400_BAD_REQUEST)
-        return Responses.make_response(error=True, message=language_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'),
+                                           status=status.HTTP_400_BAD_REQUEST)
+        return Responses.make_response(error=True, message=language_serializer.errors,
+                                       status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
         try:
@@ -151,7 +160,6 @@ class LanguageProfile(APIView):
 
 
 class ExperienceProfile(APIView):
-
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -171,8 +179,8 @@ class ExperienceProfile(APIView):
             experience_serializer = ExperienceSerializer(ProfessionalExperience.objects.filter(profile=profile[0].id),
                                                          many=True)
         except:
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                        status=status.HTTP_400_BAD_REQUEST)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'),
+                                           status=status.HTTP_400_BAD_REQUEST)
 
         return Responses.make_response(data=experience_serializer.data)
 
@@ -183,9 +191,10 @@ class ExperienceProfile(APIView):
             if response:
                 experience_response = ExperienceSerializer(response)
                 return Responses.make_response(data=experience_response.data, status=status.HTTP_201_CREATED)
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                        status=status.HTTP_400_BAD_REQUEST)
-        return Responses.make_response(error=True, message=experience_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'),
+                                           status=status.HTTP_400_BAD_REQUEST)
+        return Responses.make_response(error=True, message=experience_serializer.errors,
+                                       status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
         experience_item = self.get_object(request, request.data.get('experience_id'))
@@ -195,10 +204,10 @@ class ExperienceProfile(APIView):
             if experience_response:
                 response = ExperienceSerializer(experience_response)
                 return Responses.make_response(data=response.data)
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'),
+                                           status=status.HTTP_400_BAD_REQUEST)
         return Responses.make_response(error=True, message=experience_serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+                                       status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
         try:
@@ -209,12 +218,10 @@ class ExperienceProfile(APIView):
             return Responses.make_response(error=True, message="Not Found", status=status.HTTP_404_NOT_FOUND)
 
 
-
-@api_view(['GET','PUT'])
+@api_view(['GET', 'PUT'])
 @authentication_classes([authentication.TokenAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def job_status(request):
-
     if request.method == "GET":
         try:
             profile = Profile.objects.get(user=request.user.id)
@@ -231,14 +238,15 @@ def job_status(request):
             }
             return Responses.make_response(data=data)
         except:
-            return Responses.make_response(data={}, error=True, 
-                    message=CONSTANTS.get('error_server'), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Responses.make_response(data={}, error=True,
+                                           message=CONSTANTS.get('error_server'),
+                                           status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     elif request.method == "PUT":
         profile = Profile.objects.get(user=request.user.id)
         user = request.user
         data = request.data
-        
+
         job_status_serializer = JobStatusSerializer(profile.job_status, data=data)
         if job_status_serializer.is_valid():
             response = job_status_serializer.save()
@@ -246,17 +254,16 @@ def job_status(request):
             return Responses.make_response(data=response.data)
         else:
             return Responses.make_response(error=True, message=job_status_serializer.errors,
-                                            status=status.HTTP_400_BAD_REQUEST)
+                                           status=status.HTTP_400_BAD_REQUEST)
     else:
         return Responses.make_response(error=True, message="method not allowed",
-                                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+                                       status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-                                        
+
 @api_view(['GET', 'PUT'])
 @authentication_classes([authentication.TokenAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def profile_form(request):
-
     if request.method == 'GET':
 
         countries_serializer = CountriesSerializer(Countries.objects.all(), many=True)
@@ -270,72 +277,72 @@ def profile_form(request):
         profile = Profile.objects.filter(user=request.user.id)
         serializer = FisrtPageProfileSerializer(profile, many=True)
         data = {
-                    "profile": serializer.data,
-                    "options": options,
-                }
+            "profile": serializer.data,
+            "options": options,
+        }
         return Responses.make_response(data=data)
-    
+
     elif request.method == 'PUT':
 
-            profile = Profile.objects.get(user=request.user.id)
-            user = request.user
-            data = request.data
+        profile = Profile.objects.get(user=request.user.id)
+        user = request.user
+        data = request.data
 
-            user_data = {
-                "email": user.email,
-                "first_name": data.get("first_name"),
-                "last_name": data.get("last_name"),
-                "username": data.get("username")
+        user_data = {
+            "email": user.email,
+            "first_name": data.get("first_name"),
+            "last_name": data.get("last_name"),
+            "username": data.get("username")
+        }
+        try:
+            profile_data = {
+                "user": user,
+                "birthday": data.get("birthday"),
+                "civil_status": CivilStatus.objects.get(pk=data.get("c_status")),
+                "home_phone": data.get("home_phone"),
+                "mobile_phone": data.get("mobile_phone"),
+                "gender": Gender.objects.get(pk=data.get("gender")),
             }
-            try:
-                profile_data = {
-                    "user":user,
-                    "birthday": data.get("birthday"),
-                    "civil_status": CivilStatus.objects.get(pk= data.get("c_status")),
-                    "home_phone": data.get("home_phone"),
-                    "mobile_phone": data.get("mobile_phone"),
-                    "gender": Gender.objects.get(pk=data.get("gender")),
-                }
-                address_data = {
-                    "country":Countries.objects.get(pk=data.get("country")),
-                    "city": Cities.objects.get(pk=data.get("city")),
-                    "address_line1": data.get("address_line1")
-                }
-            except ObjectDoesNotExist:
-                return Responses.make_response(data={},error=True, message=CONSTANTS.get('error_server'), 
-                                    status=status.HTTP_400_BAD_REQUEST)
+            address_data = {
+                "country": Countries.objects.get(pk=data.get("country")),
+                "city": Cities.objects.get(pk=data.get("city")),
+                "address_line1": data.get("address_line1")
+            }
+        except ObjectDoesNotExist:
+            return Responses.make_response(data={}, error=True, message=CONSTANTS.get('error_server'),
+                                           status=status.HTTP_400_BAD_REQUEST)
 
-            address_item = profile.Address
-            if address_item is None:
-                address_item = Address.objects.create()
-                profile_data['Address'] = address_item       
-            address_serializer = AddressSerializer(address_item, data=address_data)
-            if address_serializer.is_valid():
-                address_serializer.update(address_item, address_data)
-            else:
-                return Responses.make_response(error=True, message=address_serializer.errors, 
-                                            status=status.HTTP_400_BAD_REQUEST)
+        address_item = profile.Address
+        if address_item is None:
+            address_item = Address.objects.create()
+            profile_data['Address'] = address_item
+        address_serializer = AddressSerializer(address_item, data=address_data)
+        if address_serializer.is_valid():
+            address_serializer.update(address_item, address_data)
+        else:
+            return Responses.make_response(error=True, message=address_serializer.errors,
+                                           status=status.HTTP_400_BAD_REQUEST)
 
-            user_serializer = UserSerializer(user, data=user_data)
-            if user_serializer.is_valid():
-                user_serializer.save()
-            else:
-                return Responses.make_response(error=True, message=user_serializer.errors, 
-                                            status=status.HTTP_400_BAD_REQUEST)
-            
-            profile_serializer = ProfileSerializer(profile, data=profile_data)
-            if profile_serializer.is_valid():
-                profile_response = profile_serializer.update(profile, profile_data)
-                if profile_response:
-                    response = FisrtPageProfileSerializer(profile_response)
-                    return Responses.make_response(data=response.data)
-                return Responses.make_response(error=True, message=CONSTANTS.get('error_server'), 
-                            status=status.HTTP_400_BAD_REQUEST)
-            return Responses.make_response(error=True, message= profile_serializer.errors, 
-                                            status=status.HTTP_400_BAD_REQUEST)
+        user_serializer = UserSerializer(user, data=user_data)
+        if user_serializer.is_valid():
+            user_serializer.save()
+        else:
+            return Responses.make_response(error=True, message=user_serializer.errors,
+                                           status=status.HTTP_400_BAD_REQUEST)
+
+        profile_serializer = ProfileSerializer(profile, data=profile_data)
+        if profile_serializer.is_valid():
+            profile_response = profile_serializer.update(profile, profile_data)
+            if profile_response:
+                response = FisrtPageProfileSerializer(profile_response)
+                return Responses.make_response(data=response.data)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_server'),
+                                           status=status.HTTP_400_BAD_REQUEST)
+        return Responses.make_response(error=True, message=profile_serializer.errors,
+                                       status=status.HTTP_400_BAD_REQUEST)
     else:
         return Responses.make_response(error=True, message="method not allowed",
-                                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+                                       status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @api_view(['GET'])

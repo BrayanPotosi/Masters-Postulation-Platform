@@ -1,20 +1,25 @@
+# Django
 from django.contrib.auth import authenticate, get_user_model
 
+# Rest Framework
 from rest_framework import status, serializers
 
-from djoser.conf import settings
+# Djoser
 from djoser.views import UserViewSet, TokenCreateView
-from djoser import utils
 from djoser.serializers import TokenCreateSerializer
+from djoser.conf import settings
+from djoser import utils
 
-
+# Utils
 from utils.responses import Responses
 from utils.constants import CONSTANTS
 
 User = get_user_model()
 
-"""Rewrite TokenCreateSerializer in order to manage error responses"""
+
 class OverrideTokenCreateSerializer(TokenCreateSerializer):
+    """Rewrite TokenCreateSerializer in order to manage error responses"""
+
     password = serializers.CharField(required=False, style={"input_type": "password"})
 
     default_error_messages = {
@@ -42,9 +47,8 @@ class OverrideTokenCreateSerializer(TokenCreateSerializer):
         self.fail("invalid_credentials")
 
 
-"""Login override HTTP response"""
 class Login(TokenCreateView):
-
+    """Login override HTTP response"""
     serializer_class = OverrideTokenCreateSerializer
 
     def _action(self, serializer):
@@ -55,12 +59,13 @@ class Login(TokenCreateView):
                 data=token_serializer_class(token).data)
         except Exception as e:
             print(e)
-            return Responses.make_response(error=True, message=CONSTANTS.get('error_login'), status=status.HTTP_400_BAD_REQUEST)
+            return Responses.make_response(error=True, message=CONSTANTS.get('error_login'),
+                                           status=status.HTTP_400_BAD_REQUEST)
 
-"""Signup and login override Djoser methods
-"""
+
 class SignUp(UserViewSet):
- 
+    """Signup and login override Djoser methods"""
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
