@@ -342,6 +342,8 @@ def profile_form(request):
 @authentication_classes([authentication.TokenAuthentication])
 @permission_classes([permissions.IsAuthenticated])
 def profile_cities(request):
+    """Get cities from a specific Country"""
+
     country = request.query_params.get('country')
     try:
         cities = Cities.objects.filter(country_id=country)
