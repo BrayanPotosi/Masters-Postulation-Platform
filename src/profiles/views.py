@@ -47,8 +47,6 @@ class ModelObject:
         try:
             profile = Profile.objects.get(user=request.user.id)
             education_obj = model.objects.get(pk=pk)
-            print(profile)
-            print(education_obj)
             if education_obj.profile == profile:
                 return education_obj
             raise Http404
