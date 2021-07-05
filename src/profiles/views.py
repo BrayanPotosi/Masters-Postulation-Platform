@@ -39,15 +39,14 @@ from .models import (
 )
 
 
-class EducationProfile(APIView):
-    """Endpoint to perform CRUD operations on the Education model"""
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+class ModelObject:
+    """Get a specific object from a model"""
 
-    def get_object(self, request, pk):
+    @staticmethod
+    def get_object(request, pk, model):
         try:
             profile = Profile.objects.get(user=request.user.id)
-            education_obj = Education.objects.get(pk=pk)
+            education_obj = model.objects.get(pk=pk)
             print(profile)
             print(education_obj)
             if education_obj.profile == profile:
@@ -56,7 +55,14 @@ class EducationProfile(APIView):
         except:
             raise Http404
 
-    def get(self, request):
+
+class EducationProfile(APIView):
+    """Endpoint to perform CRUD operations on the Education model"""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @staticmethod
+    def get(request):
         try:
             profile = Profile.objects.get(user=request.user.id)
             education_serializer = EducationSerializer(Education.objects.filter(profile=profile.id), many=True)
@@ -66,7 +72,8 @@ class EducationProfile(APIView):
 
         return Responses.make_response(data=education_serializer.data)
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         education_serializer = EducationSerializer(data=request.data)
         if education_serializer.is_valid():
             response = education_serializer.create(request)
@@ -78,8 +85,9 @@ class EducationProfile(APIView):
         return Responses.make_response(error=True, message=education_serializer.errors,
                                        status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request):
-        education_item = self.get_object(request, request.data.get('education_id'))
+    @staticmethod
+    def put(request):
+        education_item = ModelObject.get_object(request, request.data.get('education_id'), Education)
         education_serializer = EducationSerializer(education_item, data=request.data)
         if education_serializer.is_valid():
             education_response = education_serializer.update(education_item, request.data)
@@ -91,8 +99,9 @@ class EducationProfile(APIView):
         return Responses.make_response(error=True, message=education_serializer.errors,
                                        status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request):
-        education_item = self.get_object(request, request.data.get('education_id'))
+    @staticmethod
+    def delete(request):
+        education_item = ModelObject.get_object(request, request.data.get('education_id'), Education)
         education_item.delete()
         return Responses.make_response(data={"delete": "done"}, status=status.HTTP_204_NO_CONTENT)
 
@@ -102,17 +111,8 @@ class LanguageProfile(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get_object(self, request, pk):
-        try:
-            profile = Profile.objects.get(user=request.user.id)
-            language_obj = Languages.objects.get(pk=pk)
-            if language_obj.profile == profile:
-                return language_obj
-            raise Http404
-        except:
-            raise Http404
-
-    def get(self, request):
+    @staticmethod
+    def get(request):
         try:
             profile = Profile.objects.filter(user=request.user.id)
             language_serializer = LanguagesSerializer(Languages.objects.filter(profile=profile[0].id), many=True)
@@ -122,7 +122,8 @@ class LanguageProfile(APIView):
 
         return Responses.make_response(data=language_serializer.data)
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         language_serializer = LanguagesSerializer(data=request.data)
         if language_serializer.is_valid():
             response = language_serializer.create(request)
@@ -134,8 +135,9 @@ class LanguageProfile(APIView):
         return Responses.make_response(error=True, message=language_serializer.errors,
                                        status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request):
-        language_item = self.get_object(request, request.data.get('language_id'))
+    @staticmethod
+    def put(request):
+        language_item = ModelObject.get_object(request, request.data.get('language_id'), Languages)
         language_serializer = LanguagesSerializer(language_item, data=request.data)
         if language_serializer.is_valid():
             language_response = language_serializer.update(language_item, request.data)
@@ -147,9 +149,10 @@ class LanguageProfile(APIView):
         return Responses.make_response(error=True, message=language_serializer.errors,
                                        status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request):
+    @staticmethod
+    def delete(request):
         try:
-            language_item = self.get_object(request, request.data.get('language_id'))
+            language_item = ModelObject.get_object(request, request.data.get('language_id'), Languages)
             language_item.delete()
             return Responses.make_response(data={"delete": "done"}, status=status.HTTP_204_NO_CONTENT)
         except:
@@ -161,17 +164,8 @@ class ExperienceProfile(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get_object(self, request, pk):
-        try:
-            profile = Profile.objects.get(user=request.user.id)
-            experience_obj = ProfessionalExperience.objects.get(pk=pk)
-            if experience_obj.profile == profile:
-                return experience_obj
-            raise Http404
-        except:
-            raise Http404
-
-    def get(self, request):
+    @staticmethod
+    def get(request):
         try:
             profile = Profile.objects.filter(user=request.user.id)
             experience_serializer = ExperienceSerializer(ProfessionalExperience.objects.filter(profile=profile[0].id),
@@ -182,7 +176,8 @@ class ExperienceProfile(APIView):
 
         return Responses.make_response(data=experience_serializer.data)
 
-    def post(self, request):
+    @staticmethod
+    def post(request):
         experience_serializer = ExperienceSerializer(data=request.data)
         if experience_serializer.is_valid():
             response = experience_serializer.create(request)
@@ -194,8 +189,9 @@ class ExperienceProfile(APIView):
         return Responses.make_response(error=True, message=experience_serializer.errors,
                                        status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request):
-        experience_item = self.get_object(request, request.data.get('experience_id'))
+    @staticmethod
+    def put(request):
+        experience_item = ModelObject.get_object(request, request.data.get('experience_id'), ProfessionalExperience)
         experience_serializer = ExperienceSerializer(experience_item, data=request.data)
         if experience_serializer.is_valid():
             experience_response = experience_serializer.update(experience_item, request.data)
@@ -207,9 +203,10 @@ class ExperienceProfile(APIView):
         return Responses.make_response(error=True, message=experience_serializer.errors,
                                        status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request):
+    @staticmethod
+    def delete(request):
         try:
-            experience_item = self.get_object(request, request.data.get('experience_id'))
+            experience_item = ModelObject.get_object(request, request.data.get('experience_id'), ProfessionalExperience)
             experience_item.delete()
             return Responses.make_response(data={"delete": "done"}, status=status.HTTP_204_NO_CONTENT)
         except:
