@@ -38,13 +38,9 @@ from .models import (
     Languages, JobStatus, Gender,
 )
 
-"""Endpoint education [POST, GET]:
-   GET: Give a response with all education that match with an user-profile
-   POST: Create a new row with education into user-profile
-        Response: The Education info that was created"""
-
 
 class EducationProfile(APIView):
+    """Endpoint to perform CRUD operations on the Education model"""
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -102,6 +98,7 @@ class EducationProfile(APIView):
 
 
 class LanguageProfile(APIView):
+    """Endpoint to perform CRUD operations on the Language model"""
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -160,6 +157,7 @@ class LanguageProfile(APIView):
 
 
 class ExperienceProfile(APIView):
+    """Endpoint to perform CRUD operations on the Experience model"""
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
