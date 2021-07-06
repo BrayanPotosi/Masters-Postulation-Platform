@@ -6,6 +6,7 @@ import os
 # Django
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth import get_user_model
+from django.http import FileResponse
 
 # Rest_framework
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -20,14 +21,14 @@ from utils.constants import CONSTANTS
 from utils.responses import Responses
 
 # Reportlab
-from reportlab.platypus import Paragraph, Table, TableStyle, Image, BaseDocTemplate, PageBreak
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.enums import TA_CENTER
-from reportlab.lib.units import cm, inch
-from reportlab.lib.pagesizes import A4
-from django.http import FileResponse
+from arrow import utcnow, get
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch, mm
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+from reportlab.lib.colors import black, green, white
 from reportlab.pdfgen import canvas
-from reportlab.lib import colors
 from io import BytesIO
 
 # Models
@@ -107,6 +108,122 @@ class AdministratorsView(ListAPIView):
             "data": serializer.data
         }
         return Responses.make_response(data=data)
+
+
+class PDFReport(object):
+
+    def __init__(self, tittle, header, full_data, pdf_name):
+        super(PDFReport, self).__init__()
+
+        self.tittle = tittle
+        self.header = header
+        self.full_data = full_data
+        self.pdf_name = pdf_name
+
+        self.styles = getSampleStyleSheet()
+
+    @staticmethod
+    def _footer(canvas, pdf_file_arg):
+        canvas.saveState()
+        styles = getSampleStyleSheet()
+
+        align = ParagraphStyle(name="align", alignment=TA_RIGHT,
+                                    parent=styles["Normal"])
+
+        # Header
+        header_name = Paragraph("", styles["Normal"])
+        width, high = header_name.wrap(pdf_file_arg.width, pdf_file_arg.topMargin)
+        header_name.drawOn(canvas, pdf_file_arg.leftMargin, 736)
+
+        date = utcnow().to("local").format("dddd, DD - MMMM - YYYY", locale="es")
+        report_date = date.replace("-", "de")
+
+        header_date = Paragraph(report_date, align)
+        width, high = header_date.wrap(pdf_file_arg.width, pdf_file_arg.topMargin)
+        header_date.drawOn(canvas, pdf_file_arg.leftMargin, 736)
+
+        # footer
+        footer_down = Paragraph("", styles["Normal"])
+        width, high = footer_down.wrap(pdf_file_arg.width, pdf_file_arg.bottomMargin)
+        footer_down.drawOn(canvas, pdf_file_arg.leftMargin, 15 * mm + (0.2 * inch))
+
+        # Format canvas
+        canvas.restoreState()
+
+    def convert_data(self):
+        header_style = ParagraphStyle(name="header_style", alignment=TA_LEFT,
+                                      fontSize=10, textColor=white,
+                                      fontName="Helvetica-Bold",
+                                      parent=self.styles["Normal"])
+
+        normal_style = self.styles["Normal"]
+        normal_style.alignment = TA_LEFT
+
+        keys_name, names = zip(*[[k, n] for k, n in self.header])
+
+        header = [Paragraph(name, header_style) for name in names]
+        new_data = [tuple(header)]
+
+        for date in self.full_data:
+            new_data.append([Paragraph(str(date[keys_name]), normal_style) for keys_name in keys_name])
+
+        return new_data
+
+    def export(self):
+        title_align = ParagraphStyle(name="centrar", alignment=TA_CENTER, fontSize=13,
+                                          leading=10, textColor=black,
+                                          parent=self.styles["Heading1"])
+
+        self.width, self.high = letter
+
+        convert_data = self.convert_data()
+
+        table_data = Table(convert_data, colWidths=(self.width - 100) / len(self.header), hAlign="CENTER")
+        table_data.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), green),
+            ("ALIGN", (0, 0), (0, -1), "LEFT"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("INNERGRID", (0, 0), (-1, -1), 0.50, black),
+            ("BOX", (0, 0), (-1, -1), 0.25, black),
+        ]))
+
+        history = []
+        history.append(Paragraph(self.tittle, title_align))
+        history.append(Spacer(1, 0.16 * inch))
+        history.append(table_data)
+
+        buffer = BytesIO()
+        pdf_file_arg = SimpleDocTemplate(buffer, leftMargin=50, rightMargin=50, pagesize=letter,
+                                         title='Report Up Program')
+
+        pdf_file_arg.build(history, onFirstPage=self._footer,
+                         onLaterPages=self._footer,
+                         canvasmaker=PagesNumeration)
+        buffer.seek(0)
+        pdf: BytesIO = buffer
+        return pdf
+
+
+class PagesNumeration(canvas.Canvas):
+    def __init__(self, *args, **kwargs):
+        canvas.Canvas.__init__(self, *args, **kwargs)
+        self._saved_page_states = []
+
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+
+    def save(self):
+        pages_number = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self.draw_page_number(pages_number)
+            canvas.Canvas.showPage(self)
+        canvas.Canvas.save(self)
+
+    def draw_page_number(self, pages_count):
+        self.drawRightString(204 * mm, 15 * mm + (0.2 * inch),
+                             "Página {} de {}".format(self._pageNumber, pages_count))
 
 
 @api_view(['GET'])
@@ -191,115 +308,55 @@ def candidates_view(request):
             current_date = datetime.date.today().strftime('%d/%m/%Y')
             buffer = BytesIO()
 
-            # Create the PDF object, using the buffer as its "file."
-            p = canvas.Canvas(buffer, pagesize=A4)
-
-            # Draw things on the PDF. Here's where the PDF generation happens.
-            p.setLineWidth(.2)
-            p.setFont('Helvetica', 22)
-            p.drawString(30, 750, 'PPM')
-
-            p.setFont('Helvetica', 12)
-            p.drawString(30, 735, 'Report')
-
-            high = 550
-
-            p.setFont('Helvetica', 12)
-            p.drawString(30, 685, f'Numero total de candidatos : {total_candidates}')
-            p.drawString(30, 670, f'Numero total de administradores : {admin_count}')
-            p.drawString(30, 655, f'Numero total de usuarios : {total_users}')
-            p.setFont('Helvetica-Bold', 12)
-            p.drawString(240, 600, f'Lista de postulantes ')
-
-            p.setFont('Helvetica-Bold', 12)
-            p.drawString(480, 750, current_date)
-            p.line(460, 747, 560, 747)
-
-            # Table header
-            styles = getSampleStyleSheet()
-            styleBH = styles['Normal']
-            styleBH.alignment = TA_CENTER
-            styleBH.fontSize = 10
-
-            id_candidate = Paragraph('''Id''', styleBH)
-            username = Paragraph('''Username''', styleBH)
-            email = Paragraph('''Email''', styleBH)
-            name = Paragraph('''Name''', styleBH)
-            location = Paragraph('''Location''', styleBH)
-            total_score = Paragraph('''Total Score''', styleBH)
-
-            data_user = [[id_candidate, username, email, name, location, total_score]]
-
-            # table
-            styleN = styles['BodyText']
-            styleN.alignment = TA_CENTER
-            styleN.fontSize = 7
+            data_candidate = []
+            data_admin = []
 
             for candidate in profile_list:
-                this_candidate = [candidate.user.id,
-                                  candidate.user.username,
-                                  candidate.user.email,
-                                  candidate.user.first_name,
-                                  candidate.Address,
-                                  candidate.total_score
-                                  ]
+                this_candidate = {"ID": candidate.user.id,
+                                  "Username": candidate.user.username,
+                                  "Email": candidate.user.email,
+                                  "Name": candidate.user.first_name,
+                                  "Location": candidate.Address,
+                                  "Total_score": candidate.total_score
+                                  }
 
-                data_user.append(this_candidate)
-                high -= 18
-            p.showPage()
-
-            email = Paragraph('''Email''', styleBH)
-            First_name = Paragraph('''First Name''', styleBH)
-            Last_name = Paragraph('''Last Name''', styleBH)
-
-            data_admin = [[email, First_name, Last_name]]
-
-            high2 = high - 100
-
-            p.setFont('Helvetica-Bold', 12)
-            p.drawString(230, high2 + 45, f'Lista de administradores ')
+                data_candidate.append(this_candidate)
 
             for admin in admin_list:
-                this_admin = [admin.email,
-                              admin.first_name,
-                              admin.last_name
-                              ]
+                this_admin = {"Email": admin.email,
+                              "First Name": admin.first_name,
+                              "Last Name": admin.last_name,
+                              }
+
                 data_admin.append(this_admin)
-                high2 -= 18
 
-            # table size
+            tittle = "LISTADO DE USUARIOS"
 
-            width, height = A4
-            table = Table(data_user, colWidths=[1.0 * cm, 3.3 * cm, 4.0 * cm, 3.0 * cm, 5.0 * cm, 2.3 * cm])
-            table.setStyle(TableStyle([
-                ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-                ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-            ]))
+            header_candidate = (
+                ("ID", "ID"),
+                ("Username", "Username"),
+                ("Email", "Email"),
+                ("Name", "Name"),
+                ("Location", "Location"),
+                ("Total_score", "Total_score"),
+            )
 
-            width, height = A4
-            table2 = Table(data_admin, colWidths=[6.2 * cm, 6.2 * cm, 6.2 * cm])
-            table2.setStyle(TableStyle([
-                ('INNERGRID', (0, 0), (-1, -1), 0.25, colors.black),
-                ('BOX', (0, 0), (-1, -1), 0.25, colors.black),
-            ]))
+            tittle2 = "LISTADO DE ADMINISTRADORES"
 
-            # pdf size
+            header_admin = (
+                ("Email", "ID"),
+                ("First Name", "Username"),
+                ("Last Name", "Last Name"),
+            )
 
-            table2.wrapOn(p, width, height)
-            table2.drawOn(p, 30, high2)
+            header = (header_admin, header_candidate)
+            data_user = [data_candidate, data_admin]
 
-            table.wrapOn(p, width, height)
-            table.drawOn(p, 30, high)
+            pdf_name = "Listado de usuarios.pdf"
 
-            # Close the PDF object cleanly, and we're done.
-            p.showPage()
-            p.save()
+            pdf_file = PDFReport(tittle, header_candidate, data_candidate, pdf_name).export()
 
-            # FileResponse sets the Content-Disposition header so that browsers
-            # present the option to save the file.
-            buffer.seek(0)
-
-            return FileResponse(buffer, as_attachment=True, filename='Report_Up_Program.pdf')
+            return FileResponse(pdf_file, as_attachment=True, filename='Report_Up_Program.pdf')
 
         paginator = Paginator(profile_list, items_per_page)
         try:
