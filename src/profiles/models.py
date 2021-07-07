@@ -1,21 +1,20 @@
-from django.db import models
-from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
+# Django
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth import get_user_model
+from django.db import models
 
 # Models
 from administration.models import Score
-# Models
 
 
 class OverrideUserManager(UserManager):
 
-    def create_user(self, email, username=None ,password=None, **extra_fields):
+    def create_user(self, email, username=None, password=None, **extra_fields):
+        """Create and save a user with the given username, email, and password."""
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        """
-        Create and save a user with the given username, email, and password.
-        """
+
         if not email:
             raise ValueError('The given email must be set')
         email = self.normalize_email(email)
@@ -27,8 +26,8 @@ class OverrideUserManager(UserManager):
         user.password = make_password(password)
         user.save(using=self._db)
         return user
-    
-    def create_superuser(self, email,  username=None, password=None, **extra_fields):
+
+    def create_superuser(self, email, username=None, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
 
@@ -44,7 +43,7 @@ class OverrideUserManager(UserManager):
 class User(AbstractUser):
     username = models.CharField(max_length=150, blank=True)
     email = models.EmailField(unique=True)
-    
+
     objects = OverrideUserManager()
 
     REQUIRED_FIELDS = []
@@ -79,7 +78,7 @@ class Countries(models.Model):
 
 class Cities(models.Model):
     city_name = models.CharField(max_length=60)
-    country = models.ForeignKey(Countries, default=1 ,on_delete=models.CASCADE)
+    country = models.ForeignKey(Countries, default=1, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.city_name}'
@@ -95,11 +94,13 @@ class Address(models.Model):
     def __str__(self):
         return f'{self.city}-{self.country}'
 
+
 class Gender(models.Model):
     gender = models.CharField(max_length=100, null=True)
 
     def __str__(self) -> str:
         return f'{self.gender}'
+
 
 class ProcessStatus(models.Model):
     process_name = models.CharField(max_length=100, null=True)
@@ -107,10 +108,11 @@ class ProcessStatus(models.Model):
     def __str__(self) -> str:
         return f'{self.process_name}'
 
+
 class Profile(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     birthday = models.DateField(blank=True, null=True)
-    score = models.ForeignKey(Score, null=True, blank=True ,on_delete=models.SET_NULL)
+    score = models.ForeignKey(Score, null=True, blank=True, on_delete=models.SET_NULL)
     total_score = models.PositiveIntegerField(blank=True, null=True, default=0)
     gender = models.ForeignKey(Gender, null=True, blank=True, on_delete=models.SET_NULL)
     civil_status = models.ForeignKey(CivilStatus, null=True, blank=True, on_delete=models.SET_NULL)
@@ -144,7 +146,7 @@ class GottenGrade(models.Model):
 
 
 class Education(models.Model):
-    profile = models.ForeignKey(Profile, null=True ,on_delete=models.SET_NULL)
+    profile = models.ForeignKey(Profile, null=True, on_delete=models.SET_NULL)
     last_grade = models.ForeignKey(LastGrade, null=True, on_delete=models.SET_NULL)
     gotten_grade = models.ForeignKey(GottenGrade, null=True, on_delete=models.SET_NULL)
     institution_name = models.CharField(max_length=100, null=True)
@@ -178,7 +180,7 @@ class CambridgeLevel(models.Model):
 
 
 class Languages(models.Model):
-    profile = models.ForeignKey(Profile, null=True ,on_delete=models.SET_NULL)
+    profile = models.ForeignKey(Profile, null=True, on_delete=models.SET_NULL)
     language = models.CharField(max_length=25, unique=True)
     level = models.ForeignKey(CambridgeLevel, null=True, on_delete=models.SET_NULL)
     created = models.DateTimeField(auto_now_add=True)

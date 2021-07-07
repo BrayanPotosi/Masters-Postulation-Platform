@@ -1,5 +1,7 @@
+# from django
 from django.urls import path
-# Views
+
+# from Views
 from .views import candidates_view, AdministratorsView, GetCandidateDetails, GetAdminDetails, UpdateScore
 
 app_name = 'administration'

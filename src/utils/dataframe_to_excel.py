@@ -1,11 +1,19 @@
-import io
+# Pandas
 import pandas as pd
+import io
+
+# Django
 from django.http import HttpResponse
+
+# Rest Framework
 from rest_framework import status
+
+# Utilities
 from utils.responses import Responses
 from utils.constants import CONSTANTS
 
-class Dataframe2Excel():
+
+class Dataframe2Excel:
 
     def df2xlsx(data, name="report"):
         try:
@@ -17,9 +25,10 @@ class Dataframe2Excel():
             output.seek(0)
             # xlsx_data = output.getvalue()
             file_name = f'{name}.xlsx'
-            response = HttpResponse(output, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response = HttpResponse(output,
+                                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             response['Content-Disposition'] = f'attachment; filename={file_name}'
             return response
         except:
             return Responses.make_response(error=True, message=CONSTANTS.get('error_2xlsx'),
-                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                                           status=status.HTTP_500_INTERNAL_SERVER_ERROR)

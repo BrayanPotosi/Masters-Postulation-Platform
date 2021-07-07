@@ -1,64 +1,74 @@
-from django.db import models
-from django.db.models import fields
-from rest_framework import serializers
-from django.contrib.auth import get_user_model
 # Django
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth import get_user_model
+from django.db.models import fields
+from django.db import models
+
+# Serializers
+from rest_framework import serializers
+
 # Models
-from .models import (CivilStatus, Countries, 
-                        Education, Profile, 
-                        User, Address, 
-                        JobStatus, Cities, 
-                        ProfessionalExperience, Languages,
-                        LastGrade, GottenGrade,
-                        CambridgeLevel,Gender
-                    )
+from .models import (CivilStatus, Countries,
+                     Education, Profile,
+                     User, Address,
+                     JobStatus, Cities,
+                     ProfessionalExperience, Languages,
+                     LastGrade, GottenGrade,
+                     CambridgeLevel, Gender
+                     )
 
 
 class CambridgeLevelSerializer(serializers.ModelSerializer):
     class Meta:
         model = CambridgeLevel
-        fields = ('level','id',)
+        fields = ('level', 'id',)
+
 
 class GenderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Gender
         fields = '__all__'
 
+
 class CountriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Countries
-        fields = ('country_name','id',)
+        fields = ('country_name', 'id',)
+
 
 class CitiesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cities
-        fields = ('city_name','id',)
+        fields = ('city_name', 'id',)
+
 
 class CitiesFkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cities
         fields = '__all__'
 
+
 class LastGradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = LastGrade
-        fields = ('name','id',)
+        fields = ('name', 'id',)
+
 
 class GottenGradeSerializer(serializers.ModelSerializer):
     class Meta:
-        model=GottenGrade
-        fields = ('name','id',)
+        model = GottenGrade
+        fields = ('name', 'id',)
+
 
 class CivilStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = CivilStatus
-        fields = ('c_status','id',)
+        fields = ('c_status', 'id',)
+
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
-        model=User
+        model = User
         fields = (
             'email',
             'username',
@@ -94,15 +104,13 @@ class ExperienceSerializer(serializers.ModelSerializer):
             return None
 
 
-
 class EducationSerializer(serializers.ModelSerializer):
-
     class Meta:
-        model=Education
-        exclude = ['profile','created', 'updated']
+        model = Education
+        exclude = ['profile', 'created', 'updated']
         depth = 1
-    
-    def create(self,request):
+
+    def create(self, request):
         data = request.data
         try:
             profile = Profile.objects.get(user=request.user.id)
@@ -111,7 +119,7 @@ class EducationSerializer(serializers.ModelSerializer):
             return Education.objects.create(profile=profile, last_grade=last_grade, gotten_grade=gotten_grade, **data)
         except ObjectDoesNotExist:
             return None
-    
+
     def update(self, instance, data):
         try:
             instance.gotten_grade = GottenGrade.objects.get(pk=data.get('gotten_grade_id')) or None
@@ -150,7 +158,6 @@ class LanguagesSerializer(serializers.ModelSerializer):
 
 
 class AddressSerializer(serializers.ModelSerializer):
-    
     class Meta:
 
         model = Address
@@ -173,7 +180,6 @@ class AddressSerializer(serializers.ModelSerializer):
 
 
 class JobStatusSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = JobStatus
 
@@ -184,12 +190,12 @@ class JobStatusSerializer(serializers.ModelSerializer):
             'change_opt',
         )
 
-class FisrtPageProfileSerializer(serializers.ModelSerializer):
 
+class FisrtPageProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     civil_status = CivilStatusSerializer()
     Address = AddressSerializer()
-    
+
     class Meta:
         model = Profile
         fields = (
@@ -202,6 +208,7 @@ class FisrtPageProfileSerializer(serializers.ModelSerializer):
             'mobile_phone',
             'gender',
         )
+
 
 class SecondPageProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -217,14 +224,14 @@ class SecondPageProfileSerializer(serializers.ModelSerializer):
             'job_status',
         )
 
-class ProfileSerializer(serializers.ModelSerializer):
 
+class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = '__all__'
 
         depth = 1
-    
+
         def update(self, instance, data):
             try:
                 instance.birthday = data.get("birthday")
