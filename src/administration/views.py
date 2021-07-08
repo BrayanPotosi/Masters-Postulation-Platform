@@ -58,12 +58,12 @@ class UpdateScore(UpdateAPIView):
                 if serializer.is_valid():
                     response = serializer.save()
                     response = ScoreSerializer(response)
-                    return Responses.make_response(data=response.data)
+                    return Responses.make_response(data=response.data, authorization=True)
                     # return self.update(request, *args, **kwargs)
             raise Exception
         except:
-            return Responses.make_response(error=True, message="Server error",
-                                           status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Responses.make_response(error=True, message="Server error", 
+                                           status=status.HTTP_500_INTERNAL_SERVER_ERROR, authorization=True)
 
 
 class GetCandidateDetails(RetrieveUpdateAPIView):
@@ -77,7 +77,7 @@ class GetCandidateDetails(RetrieveUpdateAPIView):
     def get(self, request, *args, **kwargs):
         new_object = self.get_object()
         serializer = CandidateDetailSerializer(new_object)
-        return Responses.make_response(data=serializer.data)
+        return Responses.make_response(data=serializer.data, authorization=True)
 
 
 class GetAdminDetails(RetrieveUpdateAPIView):
@@ -90,7 +90,8 @@ class GetAdminDetails(RetrieveUpdateAPIView):
     def get(self, request, *args, **kwargs):
         new_object = self.get_object()
         serializer = AdminDetailSerializer(new_object)
-        return Responses.make_response(data=serializer.data)
+        return Responses.make_response(data=serializer.data, authorization=True)
+
 
 
 class AdministratorsView(ListAPIView):
@@ -107,7 +108,8 @@ class AdministratorsView(ListAPIView):
             "count": total_administrators,
             "data": serializer.data
         }
-        return Responses.make_response(data=data)
+        return Responses.make_response(data=data, authorization=True)
+
 
 
 class PDFReport(object):
@@ -240,8 +242,8 @@ class PagesNumeration(canvas.Canvas):
 
 
 @api_view(['GET'])
-# @authentication_classes([authentication.TokenAuthentication])
-# @permission_classes([permissions.IsAuthenticated, permissions.IsAdminUser])
+@authentication_classes([authentication.TokenAuthentication])
+@permission_classes([permissions.IsAuthenticated, permissions.IsAdminUser])
 def candidates_view(request):
     ITEMS_PER_PAGE = 2
     items_per_page = ITEMS_PER_PAGE
@@ -398,4 +400,4 @@ def candidates_view(request):
     except ValueError:
         return Responses.make_response(error=True,
                                        message=CONSTANTS.get('error_server'),
-                                       status=status.HTTP_400_BAD_REQUEST)
+                                       status=status.HTTP_400_BAD_REQUEST, authorization=True)
