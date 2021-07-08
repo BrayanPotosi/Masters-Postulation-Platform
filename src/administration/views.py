@@ -112,12 +112,10 @@ class AdministratorsView(ListAPIView):
 
 class PDFReport(object):
 
-    def __init__(self, tittle, header, full_data, pdf_name):
+    def __init__(self, table_candidates, table_administrators, pdf_name):
         super(PDFReport, self).__init__()
-
-        self.tittle = tittle
-        self.header = header
-        self.full_data = full_data
+        self.table_candidates = table_candidates
+        self.table_administrators = table_administrators
         self.pdf_name = pdf_name
 
         self.styles = getSampleStyleSheet()
@@ -150,7 +148,7 @@ class PDFReport(object):
         # Format canvas
         canvas.restoreState()
 
-    def convert_data(self):
+    def convert_data(self, data):
         header_style = ParagraphStyle(name="header_style", alignment=TA_LEFT,
                                       fontSize=10, textColor=white,
                                       fontName="Helvetica-Bold",
@@ -159,12 +157,12 @@ class PDFReport(object):
         normal_style = self.styles["Normal"]
         normal_style.alignment = TA_LEFT
 
-        keys_name, names = zip(*[[k, n] for k, n in self.header])
+        keys_name, names = zip(*[[k, n] for k, n in data['header']])
 
         header = [Paragraph(name, header_style) for name in names]
         new_data = [tuple(header)]
 
-        for date in self.full_data:
+        for date in data['data']:
             new_data.append([Paragraph(str(date[keys_name]), normal_style) for keys_name in keys_name])
 
         return new_data
@@ -176,9 +174,10 @@ class PDFReport(object):
 
         self.width, self.high = letter
 
-        convert_data = self.convert_data()
+        convert_data = self.convert_data(self.table_candidates)
+        convert_data2 = self.convert_data(self.table_administrators)
 
-        table_data = Table(convert_data, colWidths=(self.width - 100) / len(self.header), hAlign="CENTER")
+        table_data = Table(convert_data, colWidths=(self.width - 100) / len(self.table_candidates['header']), hAlign="CENTER")
         table_data.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), green),
             ("ALIGN", (0, 0), (0, -1), "LEFT"),
@@ -187,10 +186,24 @@ class PDFReport(object):
             ("BOX", (0, 0), (-1, -1), 0.25, black),
         ]))
 
+        table_data2 = Table(convert_data2, colWidths=(self.width - 100) / len(self.table_administrators['header']), hAlign="CENTER")
+        table_data2.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), green),
+            ("ALIGN", (0, 0), (0, -1), "LEFT"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("INNERGRID", (0, 0), (-1, -1), 0.50, black),
+            ("BOX", (0, 0), (-1, -1), 0.25, black),
+        ]))
+
+
         history = []
-        history.append(Paragraph(self.tittle, title_align))
+        history.append(Paragraph(self.table_candidates['title'], title_align))
         history.append(Spacer(1, 0.16 * inch))
         history.append(table_data)
+        history.append(Spacer(2, 0.5 * inch))
+        history.append(Paragraph(self.table_administrators['title'], title_align))
+        history.append(Spacer(2, 0.5 * inch))
+        history.append(table_data2)
 
         buffer = BytesIO()
         pdf_file_arg = SimpleDocTemplate(buffer, leftMargin=50, rightMargin=50, pagesize=letter,
@@ -305,32 +318,9 @@ def candidates_view(request):
         # Getting ready the data to export to PDF format, only if param '2xlsx' is equal to '2'.
         elif format_export == '2':
 
-            current_date = datetime.date.today().strftime('%d/%m/%Y')
             buffer = BytesIO()
 
-            data_candidate = []
-            data_admin = []
-
-            for candidate in profile_list:
-                this_candidate = {"ID": candidate.user.id,
-                                  "Username": candidate.user.username,
-                                  "Email": candidate.user.email,
-                                  "Name": candidate.user.first_name,
-                                  "Location": candidate.Address,
-                                  "Total_score": candidate.total_score
-                                  }
-
-                data_candidate.append(this_candidate)
-
-            for admin in admin_list:
-                this_admin = {"Email": admin.email,
-                              "First Name": admin.first_name,
-                              "Last Name": admin.last_name,
-                              }
-
-                data_admin.append(this_admin)
-
-            tittle = "LISTADO DE USUARIOS"
+            tittle = "LISTADO DE CANDIDATOS"
 
             header_candidate = (
                 ("ID", "ID"),
@@ -341,6 +331,18 @@ def candidates_view(request):
                 ("Total_score", "Total_score"),
             )
 
+            data_candidate = []
+
+            for candidate in profile_list:
+                this_candidate = {"ID": candidate.user.id,
+                                  "Username": candidate.user.username,
+                                  "Email": candidate.user.email,
+                                  "Name": candidate.user.first_name,
+                                  "Location": candidate.Address,
+                                  "Total_score": candidate.total_score
+                                  }
+                data_candidate.append(this_candidate)
+
             tittle2 = "LISTADO DE ADMINISTRADORES"
 
             header_admin = (
@@ -349,12 +351,30 @@ def candidates_view(request):
                 ("Last Name", "Last Name"),
             )
 
-            header = (header_admin, header_candidate)
-            data_user = [data_candidate, data_admin]
+            data_admin = []
 
-            pdf_name = "Listado de usuarios.pdf"
+            for admin in admin_list:
+                this_admin = {"Email": admin.email,
+                              "First Name": admin.first_name,
+                              "Last Name": admin.last_name,
+                              }
+                data_admin.append(this_admin)
 
-            pdf_file = PDFReport(tittle, header_candidate, data_candidate, pdf_name).export()
+            pdf_name = "Report_Up_Program.pdf"
+
+            table_candidates = {
+                "header": header_candidate,
+                "data": data_candidate,
+                "title": tittle
+            }
+
+            table_administrators = {
+                "header": header_admin,
+                "data": data_admin,
+                "title": tittle2
+            }
+
+            pdf_file = PDFReport(table_candidates, table_administrators, pdf_name).export()
 
             return FileResponse(pdf_file, as_attachment=True, filename='Report_Up_Program.pdf')
 
