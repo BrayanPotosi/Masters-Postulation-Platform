@@ -1,8 +1,8 @@
 from .base import *
 
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 DATABASES = {
     'default': {
@@ -10,8 +10,8 @@ DATABASES = {
         'NAME': env("DATABASE"),
         'USER': env("DB_USER"),
         'PASSWORD': env("DB_PASSWORD"),
-        'HOST': env('DB_HOST'),
-        'PORT': env('DB_PORT')
+        'HOST': 'db',
+        'PORT': ''
     }
 }
 
