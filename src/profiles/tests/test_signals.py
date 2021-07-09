@@ -9,7 +9,7 @@ from model_mommy.recipe import Recipe, foreign_key
 from ..models import Profile
 
 
-class CreateUserProfileTest(TestCase):
+class TestSignal(TestCase):
     """Check if a user's profile is created when initializing an instance"""
 
     def setUp(self):
