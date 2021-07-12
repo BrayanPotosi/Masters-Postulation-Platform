@@ -1,0 +1,9 @@
+[run]
+omit = *migrations*,
+       *urls*,
+       *test*,
+       *admin*,
+       ./manage.py,
+       ./master_postulation_prj/config/*,
+       ./master_postulation_prj/wsgi.py,
+       *__init__*
