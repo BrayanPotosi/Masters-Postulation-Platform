@@ -6,7 +6,7 @@ from .views import profile_form, EducationProfile, LanguageProfile, ExperiencePr
 app_name = 'profiles'
 
 urlpatterns = [
-    path('information/', profile_form, name='progile_form'),
+    path('information/', profile_form, name='profile_form'),
     path('job_status/', job_status, name='job_status'),
     path('education/', EducationProfile.as_view(), name='EducationProfile'),
     path('language/', LanguageProfile.as_view(), name='language_profile'),
