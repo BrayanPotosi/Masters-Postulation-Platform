@@ -7,3 +7,4 @@ omit = *migrations*,
        ./master_postulation_prj/config/*,
        ./master_postulation_prj/wsgi.py,
        *__init__*
+
